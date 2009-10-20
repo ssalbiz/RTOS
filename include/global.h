@@ -77,10 +77,15 @@ typedef struct process_queue {
   PCB* pq_tail[MIN_PRIORITY + 1];
 } process_queue;
 
+typedef struct message_queue {
+  MessageEnvelope* head;
+  MessageEnvelope* tail;
+} message_queue;
+
 process_queue _rpq; //global ready process queue
 process_queue _mwq; //global MESSAGE_WAIT process queue
 process_queue _ewq; //global ENVELOPE_WAIT queue
-MessageEnvelope* _feq; //global free envelope queue
+message_queue _feq; //global free envelope queue
 PCB* current_process;
 
 PCB* _process_list;

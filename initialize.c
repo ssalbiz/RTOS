@@ -25,8 +25,6 @@ int register_handlers() {
   sigset(SIGUSR1, signal_handler);
   sigset(SIGUSR2, signal_handler);
   sigset(SIGALRM, signal_handler);
-
-
 return 0;
 }
 
@@ -47,7 +45,18 @@ void init_processes() {
 }
 
 arg_list* allocate_shared_memory(caddr_t* mem_ptr) {
-return NULL;
+  arg_list* args = (arg_list*) malloc(sizeof(arg_list));
+  args->parent_pid = getpid();
+  args->mem_size = MEMBLOCK_SIZE;
+  args->fid = open("tmpfile", O_RDWR | O_CREAT | O_EXCL, (mode_t) 0755);
+  ftruncate(args->fid, args->mem_size );
+  (*mem_ptr) = mmap((caddr_t) 0, 
+  		    args->mem_size, 
+		    PROT_READ | PROT_WRITE, 
+		    MAP_SHARED,
+		    args->fid,
+                    (off_t) 0);
+return args;
 }
 
 int unmask() {
@@ -74,11 +83,13 @@ int main(int argc, char** argv) {
    _kbd_pid = fork();
    if (_kbd_pid == 0) {
      execl("./keyboard", (char*) 0);
+     exit(1);
  //    terminate();
    } 
    _crt_pid = fork();
    if (_crt_pid == 0) {
      execl("./crt", (char*) 0);
+     exit(1);
  //    terminate();
    }
    

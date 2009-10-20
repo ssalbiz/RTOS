@@ -10,7 +10,7 @@ void cleanup() {
   //atomic(1);
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
-  /*
+  //*
   int stat = 0;
   if (_kbd_mem_ptr != NULL) {
     stat = munmap(_kbd_mem_ptr, MEMBLOCK_SIZE);
@@ -22,7 +22,7 @@ void cleanup() {
   }
 
   while(_process_list != NULL) {
-  /*/
+  //*/
   
   if (_rpq != NULL) _rpq_free();
   if (_mwq != NULL) _mwq_free();
