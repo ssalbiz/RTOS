@@ -8,7 +8,7 @@ RES  =
 OBJ  = set.o  userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o startkbcrtc.o $(RES)
 LINKOBJ  = userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o startkbcrtc.o set.o $(RES)
 LIBS =   
-INCS = 
+INCS = -I include/
 CXXINCS = 
 
 CXXFLAGS = $(CXXINCS)  
