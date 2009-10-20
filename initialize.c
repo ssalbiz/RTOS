@@ -1,5 +1,6 @@
 #include "initialize.h"
 #include "global.h"
+#include "queues.h"
 #include "iprocesses.h"
 
 int mask() {
@@ -30,6 +31,16 @@ return 0;
 }
 
 void setup_kernel_structs() {
+  int i;
+  rpq_allocate();
+  mwq_allocate();
+  ewq_allocate();
+  MessageEnvelope *new;
+  //allocate message envelopes
+  for (i = 0; i < ENVELOPES; i++) {
+    new = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
+    _feq_enqueue(new);
+  }
 }
 
 void init_processes() {

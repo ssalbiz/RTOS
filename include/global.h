@@ -72,12 +72,15 @@ typedef struct trace_message_event {
   int timestamp;
 } trace_message_event;
 
-typedef struct ready_process_queue {
-  PCB* rpq_head[MIN_PRIORITY + 1];
-  PCB* rpq_tail[MIN_PRIORITY + 1];
-} ready_process_queue;
+typedef struct process_queue {
+  PCB* pq_head[MIN_PRIORITY + 1];
+  PCB* pq_tail[MIN_PRIORITY + 1];
+} process_queue;
 
-ready_process_queue _rpq; //global ready process queue
+process_queue _rpq; //global ready process queue
+process_queue _mwq; //global MESSAGE_WAIT process queue
+process_queue _ewq; //global ENVELOPE_WAIT queue
+MessageEnvelope* _feq; //global free envelope queue
 PCB* current_process;
 
 PCB* _process_list;

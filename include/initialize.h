@@ -4,8 +4,8 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<stdio.h>
-
-
+#include "global.h"
+#define ENVELOPES 20
 //data structures relevant only to initialization
 typedef struct arg_list {
   int parent_pid;
