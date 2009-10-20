@@ -97,7 +97,7 @@ PCB* crt_i_process;
 
 caddr_t _kbd_mem_ptr, _crt_mem_ptr;
 int _kbd_pid, _crt_pid;
-
+int _kbd_fid, _crt_fid;
 
 
 #endif

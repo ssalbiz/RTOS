@@ -19,9 +19,8 @@ RM = rm -f
 
 all: myRTX CRT KB
 
-
 clean: 
-	${RM} $(OBJ) myRTX 
+	${RM} $(OBJ) myRTX CRT KB crt.o keyboard.o
 
 myRTX: $(OBJ)
 	$(CC) $(LINKOBJ) -g -o "myRTX" $(LIBS) -lrt
