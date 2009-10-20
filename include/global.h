@@ -2,8 +2,10 @@
 #define GLOBAL_H
 #include <stdlib.h>
 #include <signal.h>
+#include <assert.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <unistd.h>
 #define MESSAGE_SIZE 256
 #define MEMBLOCK_SIZE 256
 #define MIN_PRIORITY 3

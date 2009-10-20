@@ -4,13 +4,15 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<stdio.h>
+#include<fcntl.h>
+#include<sys/mman.h>
 #include "global.h"
 #define ENVELOPES 20
 //data structures relevant only to initialization
 typedef struct arg_list {
   int parent_pid;
   int mem_size;
-  FILE* fid;
+  int fid;
 } arg_list;
 
 typedef struct init_table {

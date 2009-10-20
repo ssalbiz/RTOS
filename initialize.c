@@ -37,7 +37,7 @@ void setup_kernel_structs() {
   //allocate message envelopes
   for (i = 0; i < ENVELOPES; i++) {
     new = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
-    _feq_enqueue(new);
+    feq_enqueue(new);
   }
 }
 
@@ -82,13 +82,13 @@ int main(int argc, char** argv) {
    allocate_shared_memory(&_crt_mem_ptr);
    _kbd_pid = fork();
    if (_kbd_pid == 0) {
-     execl("./keyboard", (char*) 0);
+     execl("./KB", (char*) 0);
      exit(1);
  //    terminate();
    } 
    _crt_pid = fork();
    if (_crt_pid == 0) {
-     execl("./crt", (char*) 0);
+     execl("./CRT", (char*) 0);
      exit(1);
  //    terminate();
    }
