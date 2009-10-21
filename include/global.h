@@ -6,11 +6,14 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#define DEBUG 1
 #define MESSAGE_SIZE 256
 #define MEMBLOCK_SIZE 256
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
+#define KEYBOARD_FILE "kbd_mem"
+#define CRT_FILE "crt_mem"
 enum States {
   EXECUTING,
   READY,

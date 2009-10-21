@@ -1,11 +1,11 @@
 #ifndef INITIALIZE_H
 #define INITIALIZE_H
-#include<signal.h>
-#include<stdlib.h>
-#include<unistd.h>
-#include<stdio.h>
-#include<fcntl.h>
-#include<sys/mman.h>
+#include <signal.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 #include "global.h"
 #define ENVELOPES 20
 //data structures relevant only to initialization
@@ -26,7 +26,7 @@ int mask();
 int register_handlers();
 void setup_kernel_structs();
 void init_processes();
-arg_list* allocate_shared_memory(caddr_t *mem_ptr);
+arg_list* allocate_shared_memory(caddr_t *mem_ptr, char* fname);
 int unmask();
 
 #endif

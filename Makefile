@@ -12,7 +12,7 @@ INCS = -I include/
 CXXINCS = 
 
 CXXFLAGS = $(CXXINCS)  
-CFLAGS = $(INCS)  
+CFLAGS = $(INCS) -g 
 RM = rm -f
 
 .PHONY: all all-before all-after clean clean-custom
