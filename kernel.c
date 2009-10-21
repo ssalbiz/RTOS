@@ -38,7 +38,7 @@ void cleanup() {
   //while(_process_list != NULL) {
   //*/
   
-  if (!rpq_is_empty()) rpq_free();
+  if (!rpq_is_empty()) proc_free();
 //  if () _mwq_free();
 //  if (_ewq != NULL) _ewq_free();
 //  if (_feq != NULL) _feq_free();
