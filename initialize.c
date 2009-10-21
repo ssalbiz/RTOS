@@ -1,7 +1,4 @@
 #include "initialize.h"
-#include "global.h"
-#include "queues.h"
-#include "iprocesses.h"
 
 int mask() {
   sigset_t newmask;

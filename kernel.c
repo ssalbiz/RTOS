@@ -1,6 +1,4 @@
 #include "kernel.h"
-#include "queues.h"
-#include "global.h"
 
 void terminate() {
   cleanup();

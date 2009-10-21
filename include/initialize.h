@@ -1,12 +1,9 @@
 #ifndef INITIALIZE_H
 #define INITIALIZE_H
-#include <signal.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <stdio.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include "global.h"
+#include "iprocesses.h"
 #define ENVELOPES 20
 //data structures relevant only to initialization
 typedef struct arg_list {
