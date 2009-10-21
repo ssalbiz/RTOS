@@ -235,7 +235,6 @@ void proc_free() { //safely deallocate PCBs on global process list
   }
   _process_list.head = NULL;
   _process_list.tail = NULL;
-  
 }
 
 void feq_free() {

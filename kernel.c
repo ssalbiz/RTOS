@@ -10,6 +10,7 @@ void cleanup() {
   printf("RTX: sending signal\n");
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
+  
   //*
   int stat = 0;
   if (_kbd_mem_ptr != NULL) {
@@ -36,10 +37,16 @@ void cleanup() {
   //while(_process_list != NULL) {
   //*/
   
-  if (!rpq_is_empty()) proc_free();
+  if (!rpq_is_empty()) { 
+    proc_free();
+    printf("RTX: deallocating global process list\n");
+  }
 //  if () _mwq_free();
 //  if (_ewq != NULL) _ewq_free();
-//  if (_feq != NULL) _feq_free();
+  if (!feq_is_empty()) {
+    feq_free();
+    printf("RTX: deallocating envelope list\n");
+  }
 
   //atomic(0);
 }
