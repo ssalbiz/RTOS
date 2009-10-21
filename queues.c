@@ -2,11 +2,15 @@
 
 
 //Queue Allocators
-void rpq_allocate() { //NULL heads and tails
-  _rpq.pq_head[0] = _rpq.pq_tail[0] = NULL; 
-  _rpq.pq_head[1] = _rpq.pq_tail[1] = NULL;
-  _rpq.pq_head[2] = _rpq.pq_tail[2] = NULL;
-  _rpq.pq_head[3] = _rpq.pq_tail[3] = NULL;
+//three types of queues used, priority process queues, FIFO process queues, and FIFO message envelopes
+void ppq_allocate(priority_process_queue** ppq) { //NULL heads and tails
+  (*ppq) = (priority_process_queue*) malloc(sizeof(priority_process_queue));
+  assert((*ppq) != NULL);
+  priority_process_queue _ppq = (*(*ppq));
+  _ppq.pq_head[0] = _ppq.pq_tail[0] = NULL; 
+  _ppq.pq_head[1] = _ppq.pq_tail[1] = NULL;
+  _ppq.pq_head[2] = _ppq.pq_tail[2] = NULL;
+  _ppq.pq_head[3] = _ppq.pq_tail[3] = NULL;
 }
 
 void mwq_allocate() { 
@@ -36,19 +40,23 @@ int feq_is_empty() {
   return (_feq.head == NULL);
 }
 
-int rpq_is_empty() {
-  return (_rpq.pq_head[0] == NULL && 
-  	  _rpq.pq_head[1] == NULL &&
-	  _rpq.pq_head[2] == NULL &&
-	  _rpq.pq_head[3] == NULL);
+int ppq_is_empty(priority_process_queue* ppq) {
+  assert(ppq != NULL);
+  priority_process_queue _ppq = (*ppq);
+  return (_ppq.pq_head[0] == NULL && 
+  	  _ppq.pq_head[1] == NULL &&
+	  _ppq.pq_head[2] == NULL &&
+	  _ppq.pq_head[3] == NULL);
 }
 
 int proc_is_empty() {
-  return (_process_list.head != NULL);
+  return (_process_list.head == NULL);
 }
 
-int rpq_is_empty_p(int p) {
-  return (_rpq.pq_head[p] == NULL);
+int ppq_is_empty_p(int p, priority_process_queue *ppq) {
+  assert(ppq != NULL);
+  priority_process_queue _ppq = (*ppq);
+  return (_ppq.pq_head[p] == NULL);
 }
 
 
@@ -79,16 +87,17 @@ void proc_enqueue(PCB* next) {
 }
 
 
-void rpq_enqueue(PCB* q_next) {
-  assert(q_next != NULL); 
+void ppq_enqueue(PCB* q_next, priority_process_queue* ppq) {
+  assert(q_next != NULL && ppq != NULL);
+  priority_process_queue _ppq = (*ppq);
   q_next->q_next = NULL;
   int priority = q_next->priority;
-  if (rpq_is_empty(priority)) {
-    _rpq.pq_head[priority] = q_next;
-    _rpq.pq_tail[priority] = _rpq.pq_head[priority];
+  if (ppq_is_empty_p(priority, ppq)) {
+    _ppq.pq_head[priority] = q_next;
+    _ppq.pq_tail[priority] = _ppq.pq_head[priority];
   } else {
-    _rpq.pq_tail[priority]->q_next = q_next;
-    _rpq.pq_tail[priority] = q_next;
+    _ppq.pq_tail[priority]->q_next = q_next;
+    _ppq.pq_tail[priority] = q_next;
   }
 }
 
@@ -97,17 +106,19 @@ void rpq_enqueue(PCB* q_next) {
 //Queue dequeues
 //remove head, reset head/tail pointer as necessary
 //return NULL on empty list
-PCB* rpq_dequeue() {
+PCB* ppq_dequeue(priority_process_queue* ppq) {
+  assert(ppq != NULL);
   PCB* ret;
+  priority_process_queue _ppq = (*ppq);
   int i = 0;
-  if (rpq_is_empty()) return NULL;
+  if (ppq_is_empty(ppq)) return NULL;
   for (; i < MIN_PRIORITY; i++) {
-    if (!rpq_is_empty(i)) {
-      ret = _rpq.pq_head[i];
-      _rpq.pq_head[i] = _rpq.pq_head[i]->q_next;
+    if (!ppq_is_empty_p(i, ppq)) {
+      ret = _ppq.pq_head[i];
+      _ppq.pq_head[i] = _ppq.pq_head[i]->q_next;
       ret->q_next = NULL;
-      if (_rpq.pq_head[i] == NULL)
-        _rpq.pq_tail[i] = NULL;
+      if (_ppq.pq_head[i] == NULL)
+        _ppq.pq_tail[i] = NULL;
       return ret;
     }
   }
@@ -137,11 +148,13 @@ MessageEnvelope* feq_dequeue() {
 
 //Queue peeks
 //return head
-PCB* rpq_peek() {
+PCB* rpq_peek(priority_process_queue* ppq) {
+  assert(ppq != NULL);
+  priority_process_queue _ppq = (*ppq);
   int i = 0;
   for (; i < MIN_PRIORITY; i++) 
-    if (!rpq_is_empty(i)) 
-      return _rpq.pq_head[i];
+    if (!ppq_is_empty_p(i, ppq)) 
+      return _ppq.pq_head[i];
 
   return NULL;
 }
@@ -159,17 +172,19 @@ MessageEnvelope* feq_peek() {
 //return target or NULL of target not contained
 //if contained, remove target from queue
 //iterate through queue until target is encountered, juggle references
-PCB* rpq_remove(PCB* target) {
+PCB* ppq_remove(PCB* target, priority_process_queue* ppq) {
+  assert(ppq != NULL);
+  priority_process_queue _ppq = (*ppq);
   int priority = target->priority;
-  PCB* t = _rpq.pq_head[priority];
-  if (target == _rpq.pq_head[priority]) {
-    _rpq.pq_head[priority] = _rpq.pq_head[priority]->q_next;
+  PCB* t = _ppq.pq_head[priority];
+  if (target == _ppq.pq_head[priority]) {
+    _ppq.pq_head[priority] = _ppq.pq_head[priority]->q_next;
     return target;
   }
   while (t->q_next != NULL) {
     if (t->q_next == target) {
-      if (_rpq.pq_tail[priority] == t->q_next) { 
-        _rpq.pq_tail[priority] = t; 
+      if (_ppq.pq_tail[priority] == t->q_next) { 
+        _ppq.pq_tail[priority] = t; 
 	return target;
       }
       t->q_next = (t->q_next)->q_next;
@@ -245,3 +260,12 @@ void feq_free() {
   }
 }
  
+int ppq_free(priority_process_queue* ppq) {
+  //assume all PCBs have been safely deallocated, only free queue memory
+  //TODO: make less retarded
+  if (ppq_is_empty(ppq))
+    free(ppq);
+  else
+    return -1;
+return 0;
+}

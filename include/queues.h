@@ -3,23 +3,24 @@
 #include "global.h"
 
 
-void rpq_allocate(); 
+void ppq_allocate(); 
 void mwq_allocate();
 void ewq_allocate();
 
 int feq_is_empty();
 void feq_enqueue(MessageEnvelope* env); 
 
-int rpq_is_empty(); 
+int ppq_is_empty(priority_process_queue* ppq); 
 
-int rpq_is_empty_p(int p);
+int ppq_is_empty_p(int p, priority_process_queue* ppq);
 
 
-void rpq_enqueue(PCB* q_next);
-PCB* rpq_dequeue();
+void ppq_enqueue(PCB* q_next,priority_process_queue* ppq);
+PCB* ppq_dequeue(priority_process_queue* ppq);
 
-PCB* rpq_peek();
-PCB* rpq_remove(PCB* target);
+PCB* ppq_peek(priority_process_queue* ppq);
+PCB* ppq_remove(PCB* target, priority_process_queue* ppq);
+int ppq_free(priority_process_queue* ppq);
+
 #endif
-void rpq_free();
   

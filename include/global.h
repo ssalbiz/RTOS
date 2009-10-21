@@ -9,6 +9,8 @@
 #define DEBUG 1
 #define MESSAGE_SIZE 256
 #define MEMBLOCK_SIZE 256
+#define NUM_PROCESS 23
+#define NUM_UPROCESS 20
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
@@ -43,19 +45,6 @@ enum msg_type {
 };
   
 
-typedef struct PCB {
-  int pid; //process id
-  enum States state; //process current state
-  enum Priority priority; //process priority
-  void* stack_ptr; //process stack pointer
-  int stack_size; //process stack limit
-  struct PCB* q_next; //process queue reference
-  struct PCB* p_next; //global process list reference
-  void* message_send; //send message queue
-  void* message_receieve; // receiving message queue
-  enum bool i_process; //is this an i_process? PCB
-
-} PCB;
 
 typedef struct MessageEnvelope {
   struct MessageEnvelope* next;
@@ -77,6 +66,26 @@ typedef struct trace_message_event {
   int timestamp;
 } trace_message_event;
 
+typedef struct message_queue {
+  MessageEnvelope* head;
+  MessageEnvelope* tail;
+} message_queue;
+
+
+typedef struct PCB {
+  int pid; //process id
+  enum States state; //process current state
+  enum Priority priority; //process priority
+  void* stack_ptr; //process stack pointer
+  int stack_size; //process stack limit
+  struct PCB* q_next; //process queue reference
+  struct PCB* p_next; //global process list reference
+  message_queue message_send; //send message queue
+  message_queue message_receieve; // receiving message queue
+  enum bool i_process; //is this an i_process? PCB
+
+} PCB;
+
 typedef struct priority_process_queue {
   PCB* pq_head[MIN_PRIORITY + 1];
   PCB* pq_tail[MIN_PRIORITY + 1];
@@ -87,12 +96,8 @@ typedef struct process_queue {
   PCB* tail;
 } process_queue;
 
-typedef struct message_queue {
-  MessageEnvelope* head;
-  MessageEnvelope* tail;
-} message_queue;
 
-priority_process_queue _rpq; //global ready process queue
+priority_process_queue* _rpq; //global ready process queue
 priority_process_queue _mwq; //global MESSAGE_WAIT process queue
 priority_process_queue _ewq; //global ENVELOPE_WAIT queue
 message_queue _feq; //global free envelope queue
@@ -106,6 +111,5 @@ PCB* crt_i_process;
 caddr_t _kbd_mem_ptr, _crt_mem_ptr;
 int _kbd_pid, _crt_pid;
 int _kbd_fid, _crt_fid;
-
 
 #endif

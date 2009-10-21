@@ -14,11 +14,10 @@ int mask() {
 }
 
 int register_handlers() {
-
-  sigset(SIGILL, signal_handler);
+  sigset(SIGILL,  signal_handler);
   sigset(SIGSEGV, signal_handler);
-  sigset(SIGHUP, signal_handler);
-  sigset(SIGINT, signal_handler);
+  sigset(SIGHUP,  signal_handler);
+  sigset(SIGINT,  signal_handler);
   sigset(SIGUSR1, signal_handler);
   sigset(SIGUSR2, signal_handler);
   sigset(SIGALRM, signal_handler);
@@ -27,7 +26,7 @@ return 0;
 
 void setup_kernel_structs() {
   int i;
-  rpq_allocate();
+  ppq_allocate(&_rpq);
   mwq_allocate();
   ewq_allocate();
   MessageEnvelope *new;
@@ -38,7 +37,20 @@ void setup_kernel_structs() {
   }
 }
 
-void init_processes() {
+void init_processes() { //initialize PCB properties from init table and start context
+  int i = 0;
+  PCB* newPCB = NULL;
+  for (; i < 1; i++) { //TODO: replace after unit tests
+    newPCB = (PCB*) malloc(sizeof(PCB*));
+    //_process_list_enqueue(newPCB);
+    newPCB->pid = IT[i].pid;
+    newPCB->priority = IT[i].priority;
+    newPCB->stack_size = IT[i].stack_size;
+    newPCB->state = READY;
+    newPCB->q_next = NULL;
+    newPCB->p_next = NULL;
+    proc_enqueue(newPCB);
+  }
 }
 
 arg_list* allocate_shared_memory(caddr_t* mem_ptr, char* fname) {
@@ -70,11 +82,26 @@ int unmask() {
     return 0;
 }
 
+init_table* create_init_table(int pid, int priority, int stack, void* process_code) {
+  init_table* new_rec = (init_table*) malloc(sizeof(init_table));
+  new_rec->pid = pid;
+  new_rec->priority = priority;
+  new_rec->stack_size = stack;
+  new_rec->process_code = process_code;
+  return new_rec;
+}
+
 
 int main(int argc, char** argv) {
    mask();
    register_handlers();
    setup_kernel_structs();
+   //hardcode initialization table for now. Later read them from file or something
+   //*
+   init_table* np_rec = create_init_table(0, 0, 256, (void*)null_process);
+   IT[0] = *np_rec;
+   //*/
+
    init_processes();
    arg_list* kbd_args = allocate_shared_memory(&_kbd_mem_ptr, KEYBOARD_FILE);
    arg_list* crt_args = allocate_shared_memory(&_crt_mem_ptr, CRT_FILE);

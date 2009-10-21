@@ -5,6 +5,16 @@ void terminate() {
   exit(0);
 }
 
+void release_processor() {
+
+}
+
+void null_process() {
+//  while(1) {
+//    release_processor();
+//  }
+}
+
 void cleanup() {
   //atomic(1);
   printf("RTX: sending signal\n");
@@ -31,16 +41,16 @@ void cleanup() {
     if (DEBUG && stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
     stat = unlink(CRT_FILE);
     if (DEBUG && stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
-
   }
 
   //while(_process_list != NULL) {
   //*/
   
-  if (!rpq_is_empty()) { 
+  if (!ppq_is_empty(_rpq)) { 
     proc_free();
     printf("RTX: deallocating global process list\n");
   }
+  ppq_free(_rpq);
 //  if () _mwq_free();
 //  if (_ewq != NULL) _ewq_free();
   if (!feq_is_empty()) {
