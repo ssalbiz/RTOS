@@ -6,11 +6,10 @@
 void ppq_allocate(priority_process_queue** ppq) { //NULL heads and tails
   (*ppq) = (priority_process_queue*) malloc(sizeof(priority_process_queue));
   assert((*ppq) != NULL);
-  priority_process_queue _ppq = (*(*ppq));
-  _ppq.pq_head[0] = NULL; _ppq.pq_tail[0] = NULL; 
-  _ppq.pq_head[1] = NULL; _ppq.pq_tail[1] = NULL;
-  _ppq.pq_head[2] = NULL; _ppq.pq_tail[2] = NULL;
-  _ppq.pq_head[3] = NULL; _ppq.pq_tail[3] = NULL;
+  (*ppq)->pq_head[0] = NULL; (*ppq)->pq_tail[0] = NULL; 
+  (*ppq)->pq_head[1] = NULL; (*ppq)->pq_tail[1] = NULL;
+  (*ppq)->pq_head[2] = NULL; (*ppq)->pq_tail[2] = NULL;
+  (*ppq)->pq_head[3] = NULL; (*ppq)->pq_tail[3] = NULL;
 }
 
 void mwq_allocate() { 
@@ -42,11 +41,10 @@ int feq_is_empty() {
 
 int ppq_is_empty(priority_process_queue* ppq) {
   assert(ppq != NULL);
-  priority_process_queue _ppq = (*ppq);
-  return (_ppq.pq_head[0] == NULL && 
-  	  _ppq.pq_head[1] == NULL &&
-	  _ppq.pq_head[2] == NULL &&
-	  _ppq.pq_head[3] == NULL);
+  return (ppq->pq_head[0] == NULL && 
+  	  ppq->pq_head[1] == NULL &&
+	  ppq->pq_head[2] == NULL &&
+	  ppq->pq_head[3] == NULL);
 }
 
 int proc_is_empty() {
@@ -55,8 +53,7 @@ int proc_is_empty() {
 
 int ppq_is_empty_p(int p, priority_process_queue *ppq) {
   assert(ppq != NULL);
-  priority_process_queue _ppq = (*ppq);
-  return (_ppq.pq_head[p] == NULL);
+  return (ppq->pq_head[p] == NULL);
 }
 
 
@@ -89,15 +86,14 @@ void proc_enqueue(PCB* next) {
 
 void ppq_enqueue(PCB* q_next, priority_process_queue* ppq) {
   assert(q_next != NULL && ppq != NULL);
-  priority_process_queue _ppq = (*ppq);
   q_next->q_next = NULL;
   int priority = q_next->priority;
   if (ppq_is_empty_p(priority, ppq)) {
-    _ppq.pq_head[priority] = q_next;
-    _ppq.pq_tail[priority] = _ppq.pq_head[priority];
+    ppq->pq_head[priority] = q_next;
+    ppq->pq_tail[priority] = ppq->pq_head[priority];
   } else {
-    _ppq.pq_tail[priority]->q_next = q_next;
-    _ppq.pq_tail[priority] = q_next;
+    ppq->pq_tail[priority]->q_next = q_next;
+    ppq->pq_tail[priority] = q_next;
   }
 }
 
@@ -148,7 +144,7 @@ MessageEnvelope* feq_dequeue() {
 
 //Queue peeks
 //return head
-PCB* rpq_peek(priority_process_queue* ppq) {
+PCB* ppq_peek(priority_process_queue* ppq) {
   assert(ppq != NULL);
   priority_process_queue _ppq = (*ppq);
   int i = 0;
