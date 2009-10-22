@@ -46,7 +46,7 @@ void cleanup() {
   //while(_process_list != NULL) {
   //*/
   
-  if (!ppq_is_empty(_rpq)) { 
+  if (!proc_is_empty()) { 
     proc_free();
     printf("RTX: deallocating global process list\n");
   }

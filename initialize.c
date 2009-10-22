@@ -41,7 +41,7 @@ void init_processes() { //initialize PCB properties from init table and start co
   int i = 0;
   PCB* newPCB = NULL;
   for (; i < 1; i++) { //TODO: replace after unit tests
-    newPCB = (PCB*) malloc(sizeof(PCB*));
+    newPCB = (PCB*) malloc(sizeof(PCB));
     //_process_list_enqueue(newPCB);
     newPCB->pid = IT[i].pid;
     newPCB->priority = IT[i].priority;
@@ -100,9 +100,11 @@ int main(int argc, char** argv) {
    //*
    init_table* np_rec = create_init_table(0, 0, 256, (void*)null_process);
    IT[0] = *np_rec;
+
    //*/
 
    init_processes();
+   free(np_rec);
    arg_list* kbd_args = allocate_shared_memory(&_kbd_mem_ptr, KEYBOARD_FILE);
    arg_list* crt_args = allocate_shared_memory(&_crt_mem_ptr, CRT_FILE);
    _kbd_fid = kbd_args->fid;

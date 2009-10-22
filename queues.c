@@ -7,10 +7,10 @@ void ppq_allocate(priority_process_queue** ppq) { //NULL heads and tails
   (*ppq) = (priority_process_queue*) malloc(sizeof(priority_process_queue));
   assert((*ppq) != NULL);
   priority_process_queue _ppq = (*(*ppq));
-  _ppq.pq_head[0] = _ppq.pq_tail[0] = NULL; 
-  _ppq.pq_head[1] = _ppq.pq_tail[1] = NULL;
-  _ppq.pq_head[2] = _ppq.pq_tail[2] = NULL;
-  _ppq.pq_head[3] = _ppq.pq_tail[3] = NULL;
+  _ppq.pq_head[0] = NULL; _ppq.pq_tail[0] = NULL; 
+  _ppq.pq_head[1] = NULL; _ppq.pq_tail[1] = NULL;
+  _ppq.pq_head[2] = NULL; _ppq.pq_tail[2] = NULL;
+  _ppq.pq_head[3] = NULL; _ppq.pq_tail[3] = NULL;
 }
 
 void mwq_allocate() { 
@@ -238,7 +238,7 @@ MessageEnvelope* feq_remove(MessageEnvelope* target) {
 //Queue deallocators
 //called at cleanup
 void proc_free() { //safely deallocate PCBs on global process list
-  int i = 0;
+ // int i = 0;
   PCB* next = _process_list.head;
   PCB* store;
   next = _process_list.head;
