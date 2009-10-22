@@ -105,10 +105,6 @@ int main(int argc, char** argv) {
 
    init_processes();
    free(np_rec);
-   if (ppq_is_empty(_rpq))
-     printf("METHOD FAIL\n");
-   else 
-     printf("Method works\n");
 
    arg_list* kbd_args = allocate_shared_memory(&_kbd_mem_ptr, KEYBOARD_FILE);
    arg_list* crt_args = allocate_shared_memory(&_crt_mem_ptr, CRT_FILE);
