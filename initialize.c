@@ -29,11 +29,12 @@ void setup_kernel_structs() {
   ppq_allocate(&_rpq);
   mwq_allocate();
   ewq_allocate();
+  mq_allocate(&_feq);
   MessageEnvelope *new;
   //allocate message envelopes
   for (i = 0; i < ENVELOPES; i++) {
     new = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
-    feq_enqueue(new);
+    mq_enqueue(new, _feq);
   }
 }
 

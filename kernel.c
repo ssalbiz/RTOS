@@ -53,8 +53,8 @@ void cleanup() {
   ppq_free(_rpq);
 //  if () _mwq_free();
 //  if (_ewq != NULL) _ewq_free();
-  if (!feq_is_empty()) {
-    feq_free();
+  if (!mq_is_empty(_feq)) {
+    mq_free(_feq);
     printf("RTX: deallocating envelope list\n");
   }
 
