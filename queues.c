@@ -259,9 +259,6 @@ void feq_free() {
 int ppq_free(priority_process_queue* ppq) {
   //assume all PCBs have been safely deallocated, only free queue memory
   //TODO: make less retarded
-  if (ppq_is_empty(ppq))
-    free(ppq);
-  else
-    return -1;
+  free(ppq);
 return 0;
 }
