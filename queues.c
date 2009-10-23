@@ -12,19 +12,6 @@ void ppq_allocate(priority_process_queue** ppq) { //NULL heads and tails
   (*ppq)->pq_head[3] = NULL; (*ppq)->pq_tail[3] = NULL;
 }
 
-void mwq_allocate() { 
-  _mwq.pq_head[0] = _mwq.pq_tail[0] = NULL;
-  _mwq.pq_head[1] = _mwq.pq_tail[1] = NULL;
-  _mwq.pq_head[2] = _mwq.pq_tail[2] = NULL;
-  _mwq.pq_head[3] = _mwq.pq_tail[3] = NULL;
-}
-void ewq_allocate() {
-  _ewq.pq_head[0] = _ewq.pq_tail[0] = NULL;
-  _ewq.pq_head[1] = _ewq.pq_tail[1] = NULL;
-  _ewq.pq_head[2] = _ewq.pq_tail[2] = NULL;
-  _ewq.pq_head[3] = _ewq.pq_tail[3] = NULL;
-}
-
 void mq_allocate(message_queue** mq) {
   (*mq) = (message_queue*) malloc(sizeof(message_queue));
   assert((*mq) != NULL);
@@ -32,11 +19,18 @@ void mq_allocate(message_queue** mq) {
   (*mq)->tail   = NULL;
 }
 
+void pq_allocate(process_queue** pq) {
+  (*pq) = (process_queue*) malloc(sizeof(process_queue));
+  assert((*pq) != NULL);
+  (*pq)->head = NULL;
+  (*pq)->tail = NULL;
+}
 
+/*
 void proc_allocate() {
   _process_list.head = NULL;
   _process_list.tail= NULL;
-}
+}*/
 
 //Queue is_empty (if queue head is NULL, no elements, therefore empty)
 int mq_is_empty(message_queue* mq) {
@@ -53,9 +47,15 @@ int ppq_is_empty(priority_process_queue* ppq) {
 	  ppq->pq_head[3] == NULL);
 }
 
+int pq_is_empty(process_queue* pq) {
+  assert(pq != NULL);
+  return (pq->head == NULL);
+}
+
+/*
 int proc_is_empty() {
   return (_process_list.head == NULL);
-}
+}*/
 
 int ppq_is_empty_p(int p, priority_process_queue *ppq) {
   assert(ppq != NULL);
@@ -78,6 +78,19 @@ void mq_enqueue(MessageEnvelope* env, message_queue* mq) {
   }
 }
 
+void pq_enqueue(PCB* next, process_queue* pq) {
+  assert(pq != NULL && next != NULL);
+  next->p_next = NULL;
+  if (pq_is_empty(pq)) {
+    pq->head = next;
+    pq->tail = pq->head;
+  } else {
+    (pq->tail)->p_next = next;
+    pq->tail = next;
+  }
+}
+
+/*
 void proc_enqueue(PCB* next) {
   assert(next != NULL);
   next->p_next = NULL;
@@ -89,6 +102,7 @@ void proc_enqueue(PCB* next) {
     _process_list.tail = next;
   }
 }
+*/
 
 void ppq_enqueue(PCB* q_next, priority_process_queue* ppq) {
   assert(q_next != NULL && ppq != NULL);
@@ -125,6 +139,19 @@ PCB* ppq_dequeue(priority_process_queue* ppq) {
   return NULL;
 }
 
+PCB* pq_dequeue(process_queue* pq) {
+  if (pq_is_empty(pq)) return NULL;
+  PCB* ret = NULL;
+  ret = pq->head;
+  ret->p_next = NULL;
+  pq->head = (pq->head)->p_next;
+  if (pq->head == NULL)
+    pq->tail = NULL;
+  return ret;
+}
+
+
+/*
 PCB* proc_dequeue() {
   if (proc_is_empty()) { return NULL; }
   PCB* ret  = NULL;
@@ -134,7 +161,7 @@ PCB* proc_dequeue() {
   if (_process_list.head == NULL) 
     _process_list.tail = NULL;
   return ret;
-}
+}*/
   
 MessageEnvelope* mq_dequeue(message_queue* mq) {
   assert(mq != NULL);
@@ -160,9 +187,14 @@ PCB* ppq_peek(priority_process_queue* ppq) {
   return NULL;
 }
 
+PCB* pq_peek(process_queue* pq) {
+  assert(pq != NULL);
+  return pq->head;
+}
+/*
 PCB* proc_peek() {
   return _process_list.head;
-}
+}*/
 
 MessageEnvelope* mq_peek(message_queue* mq) {
   assert(mq != NULL);
@@ -198,6 +230,26 @@ PCB* ppq_remove(PCB* target, priority_process_queue* ppq) {
   return NULL;
 }
 
+PCB* pq_remove(PCB* target, process_queue* pq) {
+  assert(target != NULL && pq != NULL);
+  PCB* next = pq->head;
+  if (target == pq->head) {
+    pq->head = (pq->head)->p_next;
+    return target;
+  }
+  while (next->p_next != target && next->p_next != NULL) {
+    next = next->p_next;
+  }
+  if (next->p_next == target) {
+    if (next->p_next == pq->tail) {
+      pq->tail = next;
+      return target;
+    }
+    next->p_next = (next->p_next)->p_next;
+    return target;
+  } else { return NULL; }
+}
+/*
 PCB* proc_remove(PCB* target) {
   PCB* next = _process_list.head;
   if (target == _process_list.head) {
@@ -215,7 +267,7 @@ PCB* proc_remove(PCB* target) {
     next->p_next = (next->p_next)->p_next;
     return target;
   } else { return NULL; }
-}
+}*/
 
 MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
   assert(target != NULL && mq != NULL);
@@ -244,7 +296,21 @@ MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
 
 //Queue deallocators
 //called at cleanup
-void proc_free() { //safely deallocate PCBs on global process list
+void pq_free(process_queue* pq) {
+  assert(pq != NULL);
+  PCB* next = pq->head;
+  PCB* store;
+  while (next != NULL) {
+    store = next->p_next;
+    free(next);
+    next = store;
+  }
+  pq->head = NULL;
+  pq->tail = NULL;
+  free(pq);
+}
+
+/*void proc_free() { //safely deallocate PCBs on global process list
  // int i = 0;
   PCB* next = _process_list.head;
   PCB* store;
@@ -257,7 +323,7 @@ void proc_free() { //safely deallocate PCBs on global process list
   }
   _process_list.head = NULL;
   _process_list.tail = NULL;
-}
+}*/
 
 void mq_free(message_queue* mq) {
   MessageEnvelope* env;

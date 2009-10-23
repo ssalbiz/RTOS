@@ -46,11 +46,14 @@ void cleanup() {
   //while(_process_list != NULL) {
   //*/
   
-  if (!proc_is_empty()) { 
-    proc_free();
+  if (!pq_is_empty(_process_list)) { 
+    pq_free(_process_list);
     printf("RTX: deallocating global process list\n");
   }
+  //since PCBs have all been freed, no need to free more
   ppq_free(_rpq);
+  ppq_free(_ewq);
+  ppq_free(_mwq);
 //  if () _mwq_free();
 //  if (_ewq != NULL) _ewq_free();
   if (!mq_is_empty(_feq)) {

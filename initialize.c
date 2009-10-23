@@ -27,9 +27,10 @@ return 0;
 void setup_kernel_structs() {
   int i;
   ppq_allocate(&_rpq);
-  mwq_allocate();
-  ewq_allocate();
+  ppq_allocate(&_mwq);
+  ppq_allocate(&_ewq);
   mq_allocate(&_feq);
+  pq_allocate(&_process_list);
   MessageEnvelope *new;
   //allocate message envelopes
   for (i = 0; i < ENVELOPES; i++) {
@@ -43,13 +44,13 @@ void init_processes() { //initialize PCB properties from init table and start co
   PCB* newPCB = NULL;
   for (; i < 1; i++) { //TODO: replace after unit tests
     newPCB = (PCB*) malloc(sizeof(PCB));
-    newPCB->pid = IT[i].pid;
-    newPCB->priority = IT[i].priority;
+    newPCB->pid        = IT[i].pid;
+    newPCB->priority   = IT[i].priority;
     newPCB->stack_size = IT[i].stack_size;
-    newPCB->state = READY;
-    newPCB->q_next = NULL;
-    newPCB->p_next = NULL;
-    proc_enqueue(newPCB);
+    newPCB->state      = READY;
+    newPCB->q_next     = NULL;
+    newPCB->p_next     = NULL;
+    pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
   }
 }
