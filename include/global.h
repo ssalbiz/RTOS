@@ -14,6 +14,7 @@
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
+#define STK_OFFSET 1
 #define KEYBOARD_FILE "kbd_mem"
 #define CRT_FILE "crt_mem"
 enum States {
@@ -76,7 +77,8 @@ typedef struct PCB {
   int pid; //process id
   enum States state; //process current state
   enum Priority priority; //process priority
-  void* stack_ptr; //process stack pointer
+  char* stack; //process stack pointer
+  char* stack_head; //original stack allocation address
   int stack_size; //process stack limit
   struct PCB* q_next; //process queue reference
   struct PCB* p_next; //global process list reference

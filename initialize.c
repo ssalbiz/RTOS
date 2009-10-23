@@ -26,11 +26,11 @@ return 0;
 
 void setup_kernel_structs() {
   int i;
-  ppq_allocate(&_rpq);
+  ppq_allocate(&_rpq); //process queues
   ppq_allocate(&_mwq);
   ppq_allocate(&_ewq);
-  mq_allocate(&_feq);
   pq_allocate(&_process_list);
+  mq_allocate(&_feq); //message queues
   MessageEnvelope *new;
   //allocate message envelopes
   for (i = 0; i < ENVELOPES; i++) {
@@ -47,6 +47,8 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->pid        = IT[i].pid;
     newPCB->priority   = IT[i].priority;
     newPCB->stack_size = IT[i].stack_size;
+    newPCB->stack = ((char*)malloc(newPCB->stack_size)) + newPCB->stack_size - STK_OFFSET;
+    newPCB->stack_head = newPCB->stack - newPCB->stack_size + STK_OFFSET;
     newPCB->state      = READY;
     newPCB->q_next     = NULL;
     newPCB->p_next     = NULL;
@@ -102,7 +104,6 @@ int main(int argc, char** argv) {
    //*
    init_table* np_rec = create_init_table(0, 0, 256, (void*)null_process);
    IT[0] = *np_rec;
-
    //*/
 
    init_processes();
@@ -113,6 +114,7 @@ int main(int argc, char** argv) {
    _kbd_fid = kbd_args->fid;
    _crt_fid = crt_args->fid;
    char arg1[7], arg2[7], arg3[7];
+
    //parse arguments
    sprintf(arg1, "%d", kbd_args->parent_pid);
    sprintf(arg2, "%d", kbd_args->fid);
@@ -123,7 +125,7 @@ int main(int argc, char** argv) {
      execl("./KB", arg1, arg2, arg3, (char*) 0);
      exit(1);
  //    terminate();
-   } 
+   }
    sprintf(arg1, "%d", crt_args->parent_pid);
    sprintf(arg2, "%d", crt_args->fid);
    sprintf(arg3, "%d", crt_args->mem_size);
@@ -134,9 +136,8 @@ int main(int argc, char** argv) {
      exit(1);
  //    terminate();
    }
+
    printf("Quitting..\n");
    terminate();
-   
-
-return 0;
+   return 0;
 }
