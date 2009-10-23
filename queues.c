@@ -245,6 +245,7 @@ void pq_free(process_queue* pq) {
   while (next != NULL) {
     store = next->p_next;
     //free stack
+    assert(next->stack_head != NULL);
     free(next->stack_head);
     free(next);
     next = store;
@@ -257,9 +258,11 @@ void pq_free(process_queue* pq) {
 
 
 void mq_free(message_queue* mq) {
-  MessageEnvelope* env;
+  assert(mq != NULL);
+  MessageEnvelope* env = NULL;
   while (!mq_is_empty(mq)) {
     env = mq_dequeue(mq);
+    assert(env != NULL);
     free(env);
   }
   free(mq);
@@ -267,6 +270,7 @@ void mq_free(message_queue* mq) {
 
  
 int ppq_free(priority_process_queue* ppq) {
+  assert(ppq != NULL);
   //assume all PCBs have been safely deallocated, only free queue memory
   //TODO: make less retarded
   free(ppq);

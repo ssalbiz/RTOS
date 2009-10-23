@@ -1,6 +1,7 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 #include <stdlib.h>
+#include <setjmp.h>
 #include <signal.h>
 #include <assert.h>
 #include <stdio.h>
@@ -82,6 +83,8 @@ typedef struct PCB {
   int stack_size; //process stack limit
   struct PCB* q_next; //process queue reference
   struct PCB* p_next; //global process list reference
+  void* process_code; //initial function for process
+  jmp_buf context;
   message_queue message_send; //send message queue
   message_queue message_receieve; // receiving message queue
   enum bool i_process; //is this an i_process? PCB

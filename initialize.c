@@ -39,6 +39,8 @@ void setup_kernel_structs() {
   }
 }
 
+jmp_buf kernel_buf;
+
 void init_processes() { //initialize PCB properties from init table and start context
   int i = 0;
   PCB* newPCB = NULL;
@@ -52,9 +54,37 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->state      = READY;
     newPCB->q_next     = NULL;
     newPCB->p_next     = NULL;
+    newPCB->process_code = (void*) IT[i].process_code;
     pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
+//    if ( setjmp(kernel_buf) == 0) {
+//      jmpsp = newPCB->stack;
+//      __asm__ ("movl %0,%%esp" :"=m" (jmpsp));
+//      if (setjmp(newPCB->context) == 0) {
+//        longjmp(kernel_buf, 1);
+//      } else {
+//        void (*tmp) ();
+//        tmp = (void*) newPCB->process_code;
+//        tmp();
+//      }
+//    }
   }
+}
+
+void init_process_contexts() {
+    char* jmpsp;
+    PCB* newPCB = pq_peek(_process_list);
+    if ( setjmp(kernel_buf) == 0) {
+      jmpsp = newPCB->stack;
+      __asm__ ("movl %0,%%esp" :"=m" (jmpsp));
+      if (setjmp(newPCB->context) == 0) {
+        longjmp(kernel_buf, 1);
+      } else {
+        void (*tmp) ();
+        tmp = (void*) newPCB->process_code;
+        tmp();
+      }
+    }
 }
 
 arg_list* allocate_shared_memory(caddr_t* mem_ptr, char* fname) {
@@ -97,9 +127,9 @@ init_table* create_init_table(int pid, int priority, int stack, void* process_co
 
 
 int main(int argc, char** argv) {
-   mask();
-   register_handlers();
-   setup_kernel_structs();
+   mask(); //block signals
+   register_handlers(); //register signal handlers
+   setup_kernel_structs(); //allocate memory necessary for initialization
    //hardcode initialization table for now. Later read them from file or something
    //*
    init_table* np_rec = create_init_table(0, 0, 256, (void*)null_process);
@@ -122,6 +152,7 @@ int main(int argc, char** argv) {
    free(kbd_args);
    _kbd_pid = fork();
    if (_kbd_pid == 0) {
+     mask();
      execl("./KB", arg1, arg2, arg3, (char*) 0);
      exit(1);
  //    terminate();
@@ -132,12 +163,15 @@ int main(int argc, char** argv) {
    free(crt_args);
    _crt_pid = fork();
    if (_crt_pid == 0) {
+     mask();
      execl("./CRT", arg1, arg2, arg3, (char*) 0);
      exit(1);
  //    terminate();
    }
-
-   printf("Quitting..\n");
+   sleep(2);
+   unmask();
+   init_process_contexts();
+   printf("Quitting Normally..\n");
    terminate();
    return 0;
 }
