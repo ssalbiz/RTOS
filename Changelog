@@ -1,2 +1,9 @@
-#git handles individual code changes, use this to describe design
-decisions/implementation issues
+10/24/2009:
+Major revisions:
+Fixed stack pointer intialization, using a STK_OFFSET on the initial stack
+pointer to correspond to the standard longword length on x86 machines.
+
+Major changes to the queue interface to provide additional abstractions.
+
+Addition of testing framework stubs
+
