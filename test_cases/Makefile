@@ -20,12 +20,15 @@ RM = rm -f
 all: tests
 
 clean: 
-	${RM} $(OBJ)  test_suite
+	${RM} $(OBJ)  main_test_suite
+
+clean-obj:
+	${RM} ${OBJ}
 
 tests: $(OBJ)
-	$(CC) $(LINKOBJ) -g -o "test_suite" $(LIBS) -lrt
+	$(CC) $(LINKOBJ) -g -o "main_test_suite" $(LIBS) -lrt
 
-queue_test.o: queue_test.c
+queue_test.o: queue_test.c queue_test.h
 	$(CC) -c -g queue_test.c -o queue_test.o $(CFLAGS)
 
 main_suite.o: main_suite.c
