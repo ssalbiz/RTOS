@@ -39,11 +39,33 @@ void setup_kernel_structs() {
   }
 }
 
+void init_process_context(PCB* target) {
+    jmp_buf kernel_buf;
+    char* proc_sp = NULL;
+    PCB* newPCB = target;
+    if (setjmp(kernel_buf)) {
+      proc_sp = newPCB->stack;
+#ifdef i386 //reset stack ptr to current process PCB
+      __asm__ ("movl %0,%%esp" :"=m" (proc_sp)); 
+#endif
+#ifdef __sparc
+      _set_sp( proc_sp );
+#endif
+      if (setjmp(newPCB->context) == 0) {
+        longjmp(kernel_buf, 1);
+      } else {
+        void (*tmp) ();
+        tmp = (void*) newPCB->process_code;
+        tmp();
+      }
+    }
+}
+
 
 void init_processes() { //initialize PCB properties from init table and start context
   int i = 0;
   PCB* newPCB = NULL;
-  for (; i < 1; i++) { //TODO: replace after unit tests
+  for (; i < NUM_PROCESS; i++) { //TODO: replace after unit tests
     newPCB = (PCB*) malloc(sizeof(PCB));
     newPCB->pid        = IT[i].pid;
     newPCB->priority   = IT[i].priority;
@@ -56,30 +78,10 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->process_code = (void*) IT[i].process_code;
     pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
+    init_process_context(newPCB);
   }
 }
 
-void init_process_contexts() {
-    jmp_buf kernel_buf;
-    char* jmpsp = NULL;
-    PCB* newPCB = pq_peek(_process_list);
-    if (setjmp(kernel_buf)) {
-      jmpsp = newPCB->stack;
-#ifdef i386 //reset stack ptr to current process PCB
-      __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); 
-#endif
-#ifdef __sparc
-      _set_sp( jmpsp );
-#endif
-      if (setjmp(newPCB->context) == 0) {
-        longjmp(kernel_buf, 1);
-      } else {
-        void (*tmp) ();
-        tmp = (void*) newPCB->process_code;
-        tmp();
-      }
-    }
-}
 
 arg_list* allocate_shared_memory(caddr_t* mem_ptr, char* fname) {
   arg_list* args = (arg_list*) malloc(sizeof(arg_list));
@@ -119,19 +121,30 @@ init_table* create_init_table(int pid, int priority, int stack, void* process_co
   return new_rec;
 }
 
+void read_initialization_table() {
+  int i = 0;
+  int pid, pri, stk;
+  void* process_code[] = {(void*)null_process}; //hard code preloaded processes
+  FILE* fconf = fopen("init_table", "r");
+  assert (fconf != NULL);
+  for (; i < NUM_PROCESS; i++) {
+    fscanf(fconf, "%d %d %d\n", &pid, &pri, &stk);
+    IT[i].pid = pid;
+    IT[i].priority = pri;
+    IT[i].stack_size = stk;
+    IT[i].process_code = process_code[i];
+  }
+  fclose(fconf);
+}
+
 
 int main(int argc, char** argv) {
    mask(); //block signals
    register_handlers(); //register signal handlers
    setup_kernel_structs(); //allocate memory necessary for initialization
-   //hardcode initialization table for now. Later read them from file or something
-   //*
-   init_table* np_rec = create_init_table(0, 0, 4000 ,(void*)null_process);
-   IT[0] = *np_rec;
-   //*/
+   read_initialization_table();
 
    init_processes();
-   free(np_rec);
 
    arg_list* kbd_args = allocate_shared_memory(&_kbd_mem_ptr, KEYBOARD_FILE);
    arg_list* crt_args = allocate_shared_memory(&_crt_mem_ptr, CRT_FILE);
@@ -164,7 +177,6 @@ int main(int argc, char** argv) {
    }
    sleep(2);
    unmask();
-   init_process_contexts();
    printf("Quitting normally..\n");
    terminate();
    return 0;
