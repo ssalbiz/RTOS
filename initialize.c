@@ -43,7 +43,7 @@ void init_process_context(PCB* target) {
     jmp_buf kernel_buf;
     char* proc_sp = NULL;
     PCB* newPCB = target;
-    if (setjmp(kernel_buf)) {
+    if (setjmp(kernel_buf) == 0) {
       proc_sp = newPCB->stack;
 #ifdef i386 //reset stack ptr to current process PCB
       __asm__ ("movl %0,%%esp" :"=m" (proc_sp)); 
