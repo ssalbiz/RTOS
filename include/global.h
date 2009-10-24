@@ -15,7 +15,13 @@
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
-#define STK_OFFSET 1
+#ifdef i386
+#define STK_OFFSET 32 //longword size (size of stack frame)
+#endif
+#ifdef __sparc
+#define STK_OFFSET 32 //sparc longword
+#endif
+
 #define KEYBOARD_FILE "kbd_mem"
 #define CRT_FILE "crt_mem"
 enum States {

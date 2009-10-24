@@ -39,7 +39,6 @@ void setup_kernel_structs() {
   }
 }
 
-jmp_buf kernel_buf;
 
 void init_processes() { //initialize PCB properties from init table and start context
   int i = 0;
@@ -57,26 +56,21 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->process_code = (void*) IT[i].process_code;
     pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
-//    if ( setjmp(kernel_buf) == 0) {
-//      jmpsp = newPCB->stack;
-//      __asm__ ("movl %0,%%esp" :"=m" (jmpsp));
-//      if (setjmp(newPCB->context) == 0) {
-//        longjmp(kernel_buf, 1);
-//      } else {
-//        void (*tmp) ();
-//        tmp = (void*) newPCB->process_code;
-//        tmp();
-//      }
-//    }
   }
 }
 
 void init_process_contexts() {
-    char* jmpsp;
+    jmp_buf kernel_buf;
+    char* jmpsp = NULL;
     PCB* newPCB = pq_peek(_process_list);
-    if ( setjmp(kernel_buf) == 0) {
+    if (setjmp(kernel_buf)) {
       jmpsp = newPCB->stack;
-      __asm__ ("movl %0,%%esp" :"=m" (jmpsp));
+#ifdef i386 //reset stack ptr to current process PCB
+      __asm__ ("movl %0,%%esp" :"=m" (jmpsp)); 
+#endif
+#ifdef __sparc
+      _set_sp( jmpsp );
+#endif
       if (setjmp(newPCB->context) == 0) {
         longjmp(kernel_buf, 1);
       } else {
@@ -132,7 +126,7 @@ int main(int argc, char** argv) {
    setup_kernel_structs(); //allocate memory necessary for initialization
    //hardcode initialization table for now. Later read them from file or something
    //*
-   init_table* np_rec = create_init_table(0, 0, 256, (void*)null_process);
+   init_table* np_rec = create_init_table(0, 0, 4000 ,(void*)null_process);
    IT[0] = *np_rec;
    //*/
 
@@ -171,7 +165,7 @@ int main(int argc, char** argv) {
    sleep(2);
    unmask();
    init_process_contexts();
-   printf("Quitting Normally..\n");
+   printf("Quitting normally..\n");
    terminate();
    return 0;
 }
