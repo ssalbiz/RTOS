@@ -15,11 +15,14 @@
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
-#ifdef i386
-#define STK_OFFSET 32 //longword size (size of stack frame)
+#ifdef __i386
+#define STK_OFFSET 4 //dword size (size of stack frame)
+#endif
+#ifdef __amd64
+#define STK_OFFSET 4 //amd64 dword??
 #endif
 #ifdef __sparc
-#define STK_OFFSET 32 //sparc longword
+#define STK_OFFSET 4 //sparc dword??
 #endif
 
 #define KEYBOARD_FILE "kbd_mem"

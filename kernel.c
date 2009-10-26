@@ -21,7 +21,6 @@ void cleanup() {
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
   
-  //*
   int stat = 0;
   if (_kbd_mem_ptr != NULL) {
     printf("RTX: unmapping keyboard share\n");
@@ -43,9 +42,6 @@ void cleanup() {
     if (DEBUG && stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
   }
 
-  //while(_process_list != NULL) {
-  //*/
-  
   if (!pq_is_empty(_process_list)) { 
     pq_free(_process_list);
     printf("RTX: deallocating global process list\n");
@@ -54,8 +50,6 @@ void cleanup() {
   ppq_free(_rpq);
   ppq_free(_ewq);
   ppq_free(_mwq);
-//  if () _mwq_free();
-//  if (_ewq != NULL) _ewq_free();
   if (!mq_is_empty(_feq)) {
     mq_free(_feq);
     printf("RTX: deallocating envelope list\n");
