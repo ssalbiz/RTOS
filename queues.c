@@ -247,6 +247,9 @@ void pq_free(process_queue** pq) {
     //free stack
     assert(next->stack_head != NULL);
     free(next->stack_head);
+    assert(next->message_send != NULL && next->message_receive != NULL);
+    free(next->message_send); 
+    free(next->message_receive);
     free(next);
     next = store;
   }

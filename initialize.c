@@ -92,6 +92,9 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->q_next     = NULL;
     newPCB->p_next     = NULL;
     newPCB->process_code = (void*) IT[i].process_code;
+    mq_allocate(&(newPCB->message_send));
+    mq_allocate(&(newPCB->message_receive));
+    
     pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
     init_process_context(newPCB);

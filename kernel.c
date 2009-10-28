@@ -51,6 +51,22 @@ PCB* pid_to_PCB(int target) {
   if (next->pid == target) return next;
   else return NULL;
 }
+
+void K_send_message(int dest_pid, MessageEnvelope* env) {
+  env->sender_pid = current_process->pid;
+  env->destination_pid = dest_pid;
+  env->timeout_ticks = -1;
+  //assume message text and type are handled elsewhere
+  PCB* target = pid_to_PCB(dest_pid);
+  mq_enqueue(env, target->message_send);
+  //do trace
+  if (target->state == MESSAGE_WAIT) {
+    target->state == READY;
+    ppq_remove(target, _mwq);
+    ppq_enqueue(target, _mwq);
+  }
+}
+
     
 void K_cleanup() {
   printf("RTX: sending signal\n");

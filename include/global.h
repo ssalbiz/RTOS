@@ -94,8 +94,8 @@ typedef struct PCB {
   struct PCB* p_next; //global process list reference
   void* process_code; //initial function for process
   jmp_buf context;
-  message_queue message_send; //send message queue
-  message_queue message_receieve; // receiving message queue
+  message_queue* message_send; //send message queue
+  message_queue* message_receive; // receiving message queue
   enum bool i_process; //is this an i_process? PCB
 
 } PCB;

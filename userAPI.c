@@ -33,3 +33,9 @@ void context_switch(jmp_buf p, jmp_buf n) {
   K_context_switch(p, n);
   atomic(0);
 }
+
+int send_message(int d_pid, MessageEnvelope* env) {
+  atomic(1);
+  K_send_message(d_pid, env);
+  atomic(0);
+}

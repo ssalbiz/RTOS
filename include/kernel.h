@@ -24,5 +24,6 @@ void K_release_processor() ;
 void null_process() ;
 PCB* pid_to_PCB(int target) ;
 void K_cleanup() ;
+void K_send_message();
 
 #endif
