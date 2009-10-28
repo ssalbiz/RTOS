@@ -5,6 +5,29 @@ void terminate() {
   exit(0);
 }
 
+int atomic(int state) {
+  sigset_t newmask;
+  if (state) {
+    sigemptyset(&newmask);
+    sigaddset(&newmask, SIGINT);
+    sigaddset(&newmask, SIGUSR1);
+    sigaddset(&newmask, SIGUSR2);
+    sigaddset(&newmask, SIGALRM);
+    if (sigprocmask(SIG_BLOCK, &newmask, &rtxmask) != 0) 
+	  return -1;
+    else
+          return 0;
+  } else {
+    if (sigprocmask(SIG_SETMASK, &rtxmask, NULL) != 0) 
+	return -1;
+    else 
+	return 0;
+  }
+}
+
+
+
+
 void context_switch(jmp_buf prev, jmp_buf next) {
   if (setjmp(prev) == 0) {
     longjmp(next, 1);
