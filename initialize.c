@@ -40,8 +40,18 @@ void setup_kernel_structs() {
   }
 }
 
+void dispatch() {
+  //should never return, so dummy jmp_buf is fine
+  jmp_buf dummy;
+  PCB* first_process = ppq_dequeue(_rpq);
+  assert(first_process != NULL);
+  current_process = first_process;
+  assert(current_process->context != NULL);
+  context_switch(dummy, current_process->context);
+}
+
+
 void init_process_context(PCB* target) {
-    jmp_buf kernel_buf;
     char* proc_sp = NULL;
     PCB* newPCB = target;
     if (setjmp(kernel_buf) == 0) {
@@ -58,8 +68,8 @@ void init_process_context(PCB* target) {
       if (setjmp(newPCB->context) == 0) {
         longjmp(kernel_buf, 1);
       } else {
-        void (*tmp) ();
-        tmp = (void*) newPCB->process_code;
+        void (*tmp) (); //since context will only be restored when the process is selected for execution
+        tmp = (void*) current_process->process_code;
         tmp();
       }
     }
@@ -181,7 +191,8 @@ int main(int argc, char** argv) {
    }
    sleep(2);
    unmask();
-   printf("Quitting normally..\n");
+   dispatch();
+   printf("Quitting from kernel...(this means you fucked up)\n");
    terminate();
    return 0;
 }

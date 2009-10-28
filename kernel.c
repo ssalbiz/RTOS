@@ -13,9 +13,13 @@ void context_switch(jmp_buf prev, jmp_buf next) {
   }
 }
 
-void process_switch() { //assumptions: called by currently executing process (PCB == current)
+void process_switch() { 
+//assumptions: 
+//-called by currently executing process (PCB == current),
+//-calling process has already enqueued itself into a process queue to re-enter execution at some point
   PCB* next = ppq_dequeue(_rpq);
   PCB* tmp = current_process;
+  assert(tmp != NULL);
   next->state = EXECUTING;
   current_process = next; //non-atomic. Will reset?
   context_switch(tmp->context, next->context);
