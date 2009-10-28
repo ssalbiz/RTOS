@@ -26,13 +26,16 @@ void process_switch() {
 }
 
 void release_processor() {
-
+  PCB* current = current_process;
+  current->state = READY;
+  ppq_enqueue(current, _rpq);
+  process_switch();
 }
 
 void null_process() {
-  while(1) {}
-//    release_processor();
-//  }
+  while(1) {
+    release_processor();
+  }
 }
 
 void cleanup() {
