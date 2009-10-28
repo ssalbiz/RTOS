@@ -20,8 +20,11 @@ RM = rm -f
 all: myRTX CRT KB 
 
 clean: 
-	${RM} $(OBJ) myRTX CRT KB crt.o keyboard.o
+	$(RM) $(OBJ) myRTX CRT KB crt.o keyboard.o
 	cd test_cases && $(MAKE) clean
+clean-obj:
+	$(RM) $(OBJ) crt.o keyboard.o
+	cd test_cases && $(MAKE) clean-obj
 
 myRTX: $(OBJ)
 	$(CC) $(LINKOBJ) -o "myRTX" $(LIBS) -lrt
