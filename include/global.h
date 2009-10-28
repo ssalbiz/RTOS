@@ -28,24 +28,24 @@
 #define KEYBOARD_FILE "kbd_mem"
 #define CRT_FILE "crt_mem"
 enum States {
-  EXECUTING,
-  READY,
-  MESSAGE_WAIT,
-  ENVELOPE_WAIT,
-  SLEEP,
-  INTERRUPTED
+  EXECUTING=0,
+  READY=1,
+  MESSAGE_WAIT=2,
+  ENVELOPE_WAIT=3,
+  SLEEP=4,
+  INTERRUPTED=5
 };
 
 enum Priority {
-  LOW,
-  MIDLOW,
-  MID,
-  MAX
+  MAX=MAX_PRIORITY,
+  MID=1,
+  MIDLOW=2,
+  LOW=MIN_PRIORITY
 };
 
-enum bool {
-  FALSE,
-  TRUE
+enum bool { 
+  FALSE=0,
+  TRUE=1
 };
 
 enum msg_type {
@@ -125,6 +125,9 @@ PCB* crt_i_process;
 caddr_t _kbd_mem_ptr, _crt_mem_ptr;
 int _kbd_pid, _crt_pid;
 int _kbd_fid, _crt_fid;
+
+//signal masking
+enum bool masked;
 sigset_t rtxmask;
 
 #endif

@@ -1,6 +1,5 @@
 #include "initialize.h"
 
-
 int mask() {
   sigset_t newmask;
   sigemptyset(&newmask);
@@ -57,7 +56,7 @@ void init_process_context(PCB* target) {
     if (setjmp(kernel_buf) == 0) {
       proc_sp = newPCB->stack;
 #ifdef i386 //reset stack ptr to current process PCB
-      __asm__ ("movl %0,%%esp" :"=m" (proc_sp)); 
+      __asm__("movl %0,%%esp" :"=m" (proc_sp)); 
 #endif
 #ifdef __amd64 //reset stack ptr to word size (assume 32-bit compatibility sub-mode??)
       __asm__("movl %0,%%esp" :"=m" (proc_sp));

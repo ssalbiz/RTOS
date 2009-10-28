@@ -5,9 +5,10 @@ void terminate() {
   exit(0);
 }
 
-int atomic(int state) {
+int atomic(int state) { 
   sigset_t newmask;
-  if (state) {
+  if (state && !masked) {
+    masked = TRUE;
     sigemptyset(&newmask);
     sigaddset(&newmask, SIGINT);
     sigaddset(&newmask, SIGUSR1);
@@ -62,7 +63,7 @@ void null_process() {
 }
 
 void cleanup() {
-  //atomic(1);
+  atomic(1);
   printf("RTX: sending signal\n");
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
@@ -101,5 +102,5 @@ void cleanup() {
     printf("RTX: deallocating envelope list\n");
   }
 
-  //atomic(0);
+  atomic(0);
 }
