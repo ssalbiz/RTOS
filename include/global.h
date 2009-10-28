@@ -111,17 +111,7 @@ typedef struct process_queue {
 } process_queue;
 
 
-priority_process_queue* _rpq; //global ready process queue
-priority_process_queue* _mwq; //global MESSAGE_WAIT process queue
-priority_process_queue* _ewq; //global ENVELOPE_WAIT queue
-message_queue* _feq; //global free envelope queue
-PCB* current_process;
-
-process_queue* _process_list;
-PCB* timer_i_process;
-PCB* keyboard_i_process;
-PCB* crt_i_process; 
-
+//helper process data structures
 caddr_t _kbd_mem_ptr, _crt_mem_ptr;
 int _kbd_pid, _crt_pid;
 int _kbd_fid, _crt_fid;

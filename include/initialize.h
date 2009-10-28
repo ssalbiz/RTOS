@@ -5,6 +5,7 @@
 #include "global.h"
 #include "kernel.h"
 #include "iprocesses.h"
+#include "userAPI.h"
 #define ENVELOPES 20
 //data structures relevant only to initialization
 typedef struct arg_list {

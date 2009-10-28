@@ -1,35 +1,15 @@
 #include "kernel.h"
 
-void terminate() {
-  cleanup();
+
+
+
+
+void K_terminate() {
+  K_cleanup();
   exit(0);
 }
 
-int atomic(int state) { 
-  sigset_t newmask;
-  if (state && !masked) {
-    masked = TRUE;
-    sigemptyset(&newmask);
-    sigaddset(&newmask, SIGINT);
-    sigaddset(&newmask, SIGUSR1);
-    sigaddset(&newmask, SIGUSR2);
-    sigaddset(&newmask, SIGALRM);
-    if (sigprocmask(SIG_BLOCK, &newmask, &rtxmask) != 0) 
-	  return -1;
-    else
-          return 0;
-  } else {
-    if (sigprocmask(SIG_SETMASK, &rtxmask, NULL) != 0) 
-	return -1;
-    else 
-	return 0;
-  }
-}
-
-
-
-
-void context_switch(jmp_buf prev, jmp_buf next) {
+void K_context_switch(jmp_buf prev, jmp_buf next) {
   if (setjmp(prev) == 0) {
     longjmp(next, 1);
   } else {
@@ -37,7 +17,7 @@ void context_switch(jmp_buf prev, jmp_buf next) {
   }
 }
 
-void process_switch() { 
+void K_process_switch() { 
 //assumptions: 
 //-called by currently executing process (PCB == current),
 //-calling process has already enqueued itself into a process queue to re-enter execution at some point
@@ -46,24 +26,33 @@ void process_switch() {
   assert(tmp != NULL);
   next->state = EXECUTING;
   current_process = next; //non-atomic. Will reset?
-  context_switch(tmp->context, next->context);
+  K_context_switch(tmp->context, next->context);
 }
 
-void release_processor() {
+void K_release_processor() {
   PCB* current = current_process;
   current->state = READY;
   ppq_enqueue(current, _rpq);
-  process_switch();
+  K_process_switch();
 }
 
 void null_process() {
   while(1) {
-    release_processor();
+    K_release_processor(); //trusted kernel process
   }
 }
 
-void cleanup() {
-  atomic(1);
+
+PCB* pid_to_PCB(int target) {
+  //re-implement with pid array/hashtable. O(n) lookup is terrible
+  PCB* next = pq_peek(_process_list);
+  while (next != NULL && next->pid != target)
+	next  = next->p_next;
+  if (next->pid == target) return next;
+  else return NULL;
+}
+    
+void K_cleanup() {
   printf("RTX: sending signal\n");
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
@@ -102,5 +91,4 @@ void cleanup() {
     printf("RTX: deallocating envelope list\n");
   }
 
-  atomic(0);
 }

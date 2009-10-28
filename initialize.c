@@ -46,7 +46,9 @@ void dispatch() {
   assert(first_process != NULL);
   current_process = first_process;
   assert(current_process->context != NULL);
-  context_switch(dummy, current_process->context);
+  //initializer is trusted code, and is allowed to run kernel primitives directly
+  atomic(1);
+  K_context_switch(dummy, current_process->context);
 }
 
 
@@ -67,6 +69,7 @@ void init_process_context(PCB* target) {
       if (setjmp(newPCB->context) == 0) {
         longjmp(kernel_buf, 1);
       } else {
+	atomic(0);//make context switches atomic
         void (*tmp) (); //since context will only be restored when the process is selected for execution
         tmp = (void*) current_process->process_code;
         tmp();
