@@ -238,9 +238,9 @@ MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
 
 //Queue deallocators
 //called at cleanup
-void pq_free(process_queue* pq) {
-  assert(pq != NULL);
-  PCB* next = pq->head;
+void pq_free(process_queue** pq) {
+  assert((*pq) != NULL);
+  PCB* next = (*pq)->head;
   PCB* store;
   while (next != NULL) {
     store = next->p_next;
@@ -250,9 +250,10 @@ void pq_free(process_queue* pq) {
     free(next);
     next = store;
   }
-  pq->head = NULL;
-  pq->tail = NULL;
-  free(pq);
+  (*pq)->head = NULL;
+  (*pq)->tail = NULL;
+  free(*pq);
+  *pq = NULL;
 }
 
 

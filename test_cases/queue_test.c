@@ -9,7 +9,7 @@ int test_allocation() {
 	pq->tail != NULL)
 	return 0;
   pq_free(&pq);
-  if (pq != NULL) return 0;
+  if (pq != NULL) return 0; //set to NULL after deallocation for scheduler
   return 1;
 }
 

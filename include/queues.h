@@ -17,7 +17,7 @@ void pq_enqueue(PCB* q_next, process_queue* pq);
 PCB* pq_dequeue(process_queue* pq);
 PCB* pq_peek(process_queue* pq);
 PCB* pq_remove(PCB* target, process_queue* pq);
-void  pq_free(process_queue* pq);
+void pq_free(process_queue** pq);
 
 
 

@@ -5,6 +5,22 @@ void terminate() {
   exit(0);
 }
 
+void context_switch(jmp_buf prev, jmp_buf next) {
+  if (setjmp(prev) == 0) {
+    longjmp(next, 1);
+  } else {
+    return;
+  }
+}
+
+void process_switch() { //assumptions: called by currently executing process (PCB == current)
+  PCB* next = ppq_dequeue(_rpq);
+  PCB* tmp = current_process;
+  next->state = EXECUTING;
+  current_process = next; //non-atomic. Will reset?
+  context_switch(tmp->context, next->context);
+}
+
 void release_processor() {
 
 }
@@ -43,7 +59,7 @@ void cleanup() {
   }
 
   if (!pq_is_empty(_process_list)) { 
-    pq_free(_process_list);
+    pq_free(&_process_list);
     printf("RTX: deallocating global process list\n");
   }
   //since PCBs have all been freed, no need to free more
