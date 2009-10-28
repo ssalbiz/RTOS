@@ -15,7 +15,7 @@
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
-#ifdef __i386
+#ifdef i386
 #define STK_OFFSET 4 //dword size (size of stack frame)
 #endif
 #ifdef __amd64
