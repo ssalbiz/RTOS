@@ -55,10 +55,9 @@ PCB* pid_to_PCB(int target) {
 void K_send_message(int dest_pid, MessageEnvelope* env) {
   env->sender_pid = current_process->pid;
   env->destination_pid = dest_pid;
-  env->timeout_ticks = -1;
   //assume message text and type are handled elsewhere
   PCB* target = pid_to_PCB(dest_pid);
-  mq_enqueue(env, target->message_send);
+  mq_enqueue(env, target->message_receive);
   //do trace
   if (target->state == MESSAGE_WAIT) {
     target->state = READY;

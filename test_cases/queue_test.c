@@ -23,6 +23,12 @@ int test_peek() {
   return 1;
 }
 int test_is_empty() {
+  message_queue* mq = NULL;
+  mq_allocate(&mq);
+  MessageEnvelope* env = (MessageEnvelope*)malloc(sizeof(MessageEnvelope));
+  mq_enqueue(env, mq);
+  if (mq_is_empty(mq)) { return 0; }
+  mq_free(mq);
   return 1;
 }
 
