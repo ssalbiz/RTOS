@@ -101,16 +101,15 @@ void ppq_enqueue(PCB* q_next, priority_process_queue* ppq) {
 PCB* ppq_dequeue(priority_process_queue* ppq) {
   assert(ppq != NULL);
   PCB* ret;
-  priority_process_queue _ppq = (*ppq);
   int i = 0;
   if (ppq_is_empty(ppq)) return NULL;
-  for (; i < MIN_PRIORITY; i++) {
+  for (; i < MIN_PRIORITY+1; i++) {
     if (!ppq_is_empty_p(i, ppq)) {
-      ret = _ppq.pq_head[i];
-      _ppq.pq_head[i] = _ppq.pq_head[i]->q_next;
+      ret = ppq->pq_head[i];
+      ppq->pq_head[i] = (ppq->pq_head[i])->q_next;
       ret->q_next = NULL;
-      if (_ppq.pq_head[i] == NULL)
-        _ppq.pq_tail[i] = NULL;
+      if (ppq->pq_head[i] == NULL)
+        ppq->pq_tail[i] = NULL;
       return ret;
     }
   }

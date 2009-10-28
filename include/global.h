@@ -10,7 +10,7 @@
 #define DEBUG 1
 #define MESSAGE_SIZE 256
 #define MEMBLOCK_SIZE 256
-#define NUM_PROCESS 1
+#define NUM_PROCESS 3
 #define NUM_UPROCESS 20
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0

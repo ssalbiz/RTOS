@@ -9,6 +9,7 @@ void ewq_allocate();
 void mq_allocate(message_queue** mq);
 int  mq_is_empty(message_queue* mq);
 void mq_enqueue(MessageEnvelope* env, message_queue* mq); 
+MessageEnvelope* mq_dequeue(message_queue* mq);
 void mq_free(message_queue* mq);
 
 void pq_allocate(process_queue** pq); 

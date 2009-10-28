@@ -92,6 +92,7 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->q_next     = NULL;
     newPCB->p_next     = NULL;
     newPCB->process_code = (void*) IT[i].process_code;
+    assert(newPCB->process_code != NULL);
     mq_allocate(&(newPCB->message_send));
     mq_allocate(&(newPCB->message_receive));
     
@@ -143,7 +144,7 @@ init_table* create_init_table(int pid, int priority, int stack, void* process_co
 void read_initialization_table() {
   int i = 0;
   int pid, pri, stk;
-  void* process_code[] = {(void*)null_process}; //hard code preloaded processes
+  void* process_code[] = {(void*)null_process, (void*)test_process_send, (void*)test_process_receive}; //hard code preloaded processes
   FILE* fconf = fopen("init_table", "r");
   assert (fconf != NULL);
   for (; i < NUM_PROCESS; i++) {
@@ -167,6 +168,7 @@ int main(int argc, char** argv) {
 
    arg_list* kbd_args = allocate_shared_memory(&_kbd_mem_ptr, KEYBOARD_FILE);
    arg_list* crt_args = allocate_shared_memory(&_crt_mem_ptr, CRT_FILE);
+   if (kbd_args == NULL || crt_args == NULL) terminate();
    _kbd_fid = kbd_args->fid;
    _crt_fid = crt_args->fid;
    char arg1[7], arg2[7], arg3[7];

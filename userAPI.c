@@ -38,4 +38,20 @@ int send_message(int d_pid, MessageEnvelope* env) {
   atomic(1);
   K_send_message(d_pid, env);
   atomic(0);
+return 0;
 }
+
+MessageEnvelope* receive_message() {
+   atomic(1);
+   MessageEnvelope* env = NULL;
+   env = K_receive_message();
+   atomic(0);
+   return env;
+}
+
+void release_processor(void) {
+  atomic(1);
+  K_release_processor();
+  atomic(0);
+}
+   

@@ -61,10 +61,28 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
   mq_enqueue(env, target->message_send);
   //do trace
   if (target->state == MESSAGE_WAIT) {
-    target->state == READY;
+    target->state = READY;
     ppq_remove(target, _mwq);
     ppq_enqueue(target, _mwq);
   }
+}
+
+MessageEnvelope* K_receive_message(void) {
+  PCB* current = current_process;
+  MessageEnvelope* env = NULL;
+  assert(current != NULL);
+  while (mq_is_empty(current->message_receive)) {
+    if (current == timer_i_process || 
+ 	current == keyboard_i_process ||
+	current == crt_i_process) return NULL;
+    //if no message waiting and not an i_process, block on receive
+    current->state = MESSAGE_WAIT;
+    ppq_enqueue(current, _mwq);
+    K_process_switch();
+  }
+  env = mq_dequeue(current_process->message_receive);
+  //do trace
+  return env;
 }
 
     
