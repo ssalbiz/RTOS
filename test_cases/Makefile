@@ -6,7 +6,7 @@ CC   = gcc
 
 RES  = 
 OBJ  = queue_test.o main_suite.o
-LINKOBJ  = $(OBJ)
+LINKOBJ  = $(OBJ) queues.o
 LIBS =   
 INCS = -I ../include/
 CXXINCS = 
@@ -20,7 +20,7 @@ RM = rm -f
 all: tests
 
 clean: 
-	${RM} $(OBJ)  main_test_suite
+	${RM} $(OBJ)  main_test_suite queues.o
 
 clean-obj:
 	${RM} ${OBJ}

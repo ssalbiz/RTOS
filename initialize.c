@@ -39,14 +39,29 @@ void setup_kernel_structs() {
   }
 }
 
+void dispatch() {
+  //should never return, so dummy jmp_buf is fine
+  jmp_buf dummy;
+  PCB* first_process = ppq_dequeue(_rpq);
+  assert(first_process != NULL);
+  current_process = first_process;
+  assert(current_process->context != NULL);
+  //initializer is trusted code, and is allowed to run kernel primitives directly
+  atomic(1);
+  K_context_switch(dummy, current_process->context);
+}
+
+
 void init_process_context(PCB* target) {
-    jmp_buf kernel_buf;
     char* proc_sp = NULL;
     PCB* newPCB = target;
     if (setjmp(kernel_buf) == 0) {
       proc_sp = newPCB->stack;
 #ifdef i386 //reset stack ptr to current process PCB
-      __asm__ ("movl %0,%%esp" :"=m" (proc_sp)); 
+      __asm__("movl %0,%%esp" :"=m" (proc_sp)); 
+#endif
+#ifdef __amd64 //reset stack ptr to word size (assume 32-bit compatibility sub-mode??)
+      __asm__("movl %0,%%esp" :"=m" (proc_sp));
 #endif
 #ifdef __sparc
       _set_sp( proc_sp );
@@ -54,8 +69,9 @@ void init_process_context(PCB* target) {
       if (setjmp(newPCB->context) == 0) {
         longjmp(kernel_buf, 1);
       } else {
-        void (*tmp) ();
-        tmp = (void*) newPCB->process_code;
+	atomic(0);//make context switches atomic
+        void (*tmp) (); //since context will only be restored when the process is selected for execution
+        tmp = (void*) current_process->process_code;
         tmp();
       }
     }
@@ -76,6 +92,10 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->q_next     = NULL;
     newPCB->p_next     = NULL;
     newPCB->process_code = (void*) IT[i].process_code;
+    assert(newPCB->process_code != NULL);
+    mq_allocate(&(newPCB->message_send));
+    mq_allocate(&(newPCB->message_receive));
+    
     pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
     init_process_context(newPCB);
@@ -124,7 +144,7 @@ init_table* create_init_table(int pid, int priority, int stack, void* process_co
 void read_initialization_table() {
   int i = 0;
   int pid, pri, stk;
-  void* process_code[] = {(void*)null_process}; //hard code preloaded processes
+  void* process_code[] = {(void*)null_process, (void*)test_process_send, (void*)test_process_receive}; //hard code preloaded processes
   FILE* fconf = fopen("init_table", "r");
   assert (fconf != NULL);
   for (; i < NUM_PROCESS; i++) {
@@ -148,6 +168,7 @@ int main(int argc, char** argv) {
 
    arg_list* kbd_args = allocate_shared_memory(&_kbd_mem_ptr, KEYBOARD_FILE);
    arg_list* crt_args = allocate_shared_memory(&_crt_mem_ptr, CRT_FILE);
+   if (kbd_args == NULL || crt_args == NULL) terminate();
    _kbd_fid = kbd_args->fid;
    _crt_fid = crt_args->fid;
    char arg1[7], arg2[7], arg3[7];
@@ -177,7 +198,8 @@ int main(int argc, char** argv) {
    }
    sleep(2);
    unmask();
-   printf("Quitting normally..\n");
+   dispatch();
+   printf("Quitting from kernel...(this means you fucked up)\n");
    terminate();
    return 0;
 }

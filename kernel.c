@@ -1,27 +1,96 @@
 #include "kernel.h"
 
-void terminate() {
-  cleanup();
+
+
+
+
+void K_terminate() {
+  K_cleanup();
   exit(0);
 }
 
-void release_processor() {
+void K_context_switch(jmp_buf prev, jmp_buf next) {
+  if (setjmp(prev) == 0) {
+    longjmp(next, 1);
+  } else {
+    return;
+  }
+}
 
+void K_process_switch() { 
+//assumptions: 
+//-called by currently executing process (PCB == current),
+//-calling process has already enqueued itself into a process queue to re-enter execution at some point
+  PCB* next = ppq_dequeue(_rpq);
+  PCB* tmp = current_process;
+  assert(tmp != NULL);
+  next->state = EXECUTING;
+  current_process = next; //non-atomic. Will reset?
+  K_context_switch(tmp->context, next->context);
+}
+
+void K_release_processor() {
+  PCB* current = current_process;
+  current->state = READY;
+  ppq_enqueue(current, _rpq);
+  K_process_switch();
 }
 
 void null_process() {
-  while(1) {}
-//    release_processor();
-//  }
+  while(1) {
+    K_release_processor(); //trusted kernel process
+  }
 }
 
-void cleanup() {
-  //atomic(1);
+
+PCB* pid_to_PCB(int target) {
+  //re-implement with pid array/hashtable. O(n) lookup is terrible
+  PCB* next = pq_peek(_process_list);
+  while (next != NULL && next->pid != target)
+	next  = next->p_next;
+  if (next->pid == target) return next;
+  else return NULL;
+}
+
+void K_send_message(int dest_pid, MessageEnvelope* env) {
+  env->sender_pid = current_process->pid;
+  env->destination_pid = dest_pid;
+  env->timeout_ticks = -1;
+  //assume message text and type are handled elsewhere
+  PCB* target = pid_to_PCB(dest_pid);
+  mq_enqueue(env, target->message_send);
+  //do trace
+  if (target->state == MESSAGE_WAIT) {
+    target->state = READY;
+    ppq_remove(target, _mwq);
+    ppq_enqueue(target, _mwq);
+  }
+}
+
+MessageEnvelope* K_receive_message(void) {
+  PCB* current = current_process;
+  MessageEnvelope* env = NULL;
+  assert(current != NULL);
+  while (mq_is_empty(current->message_receive)) {
+    if (current == timer_i_process || 
+ 	current == keyboard_i_process ||
+	current == crt_i_process) return NULL;
+    //if no message waiting and not an i_process, block on receive
+    current->state = MESSAGE_WAIT;
+    ppq_enqueue(current, _mwq);
+    K_process_switch();
+  }
+  env = mq_dequeue(current_process->message_receive);
+  //do trace
+  return env;
+}
+
+    
+void K_cleanup() {
   printf("RTX: sending signal\n");
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
   
-  //*
   int stat = 0;
   if (_kbd_mem_ptr != NULL) {
     printf("RTX: unmapping keyboard share\n");
@@ -43,23 +112,17 @@ void cleanup() {
     if (DEBUG && stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
   }
 
-  //while(_process_list != NULL) {
-  //*/
-  
   if (!pq_is_empty(_process_list)) { 
-    pq_free(_process_list);
+    pq_free(&_process_list);
     printf("RTX: deallocating global process list\n");
   }
   //since PCBs have all been freed, no need to free more
   ppq_free(_rpq);
   ppq_free(_ewq);
   ppq_free(_mwq);
-//  if () _mwq_free();
-//  if (_ewq != NULL) _ewq_free();
   if (!mq_is_empty(_feq)) {
     mq_free(_feq);
     printf("RTX: deallocating envelope list\n");
   }
 
-  //atomic(0);
 }

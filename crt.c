@@ -2,6 +2,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 
+
 void die() {
   printf("CRT: Received SIGINT, quitting..\n");
   exit(1);

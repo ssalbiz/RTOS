@@ -2,6 +2,14 @@
 #include "queues.h"
 
 int test_allocation() {
+  process_queue* pq;
+  pq_allocate(&pq);
+  if (pq == NULL ||
+ 	pq->head != NULL ||
+	pq->tail != NULL)
+	return 0;
+  pq_free(&pq);
+  if (pq != NULL) return 0; //set to NULL after deallocation for scheduler
   return 1;
 }
 

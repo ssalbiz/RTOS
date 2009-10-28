@@ -10,39 +10,42 @@
 #define DEBUG 1
 #define MESSAGE_SIZE 256
 #define MEMBLOCK_SIZE 256
-#define NUM_PROCESS 1
+#define NUM_PROCESS 3
 #define NUM_UPROCESS 20
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
 #ifdef i386
-#define STK_OFFSET 32 //longword size (size of stack frame)
+#define STK_OFFSET 4 //dword size (size of stack frame)
+#endif
+#ifdef __amd64
+#define STK_OFFSET 4 //amd64 dword??
 #endif
 #ifdef __sparc
-#define STK_OFFSET 32 //sparc longword
+#define STK_OFFSET 4 //sparc dword??
 #endif
 
 #define KEYBOARD_FILE "kbd_mem"
 #define CRT_FILE "crt_mem"
 enum States {
-  EXECUTING,
-  READY,
-  MESSAGE_WAIT,
-  ENVELOPE_WAIT,
-  SLEEP,
-  INTERRUPTED
+  EXECUTING=0,
+  READY=1,
+  MESSAGE_WAIT=2,
+  ENVELOPE_WAIT=3,
+  SLEEP=4,
+  INTERRUPTED=5
 };
 
 enum Priority {
-  LOW,
-  MIDLOW,
-  MID,
-  MAX
+  MAX=MAX_PRIORITY,
+  MID=1,
+  MIDLOW=2,
+  LOW=MIN_PRIORITY
 };
 
-enum bool {
-  FALSE,
-  TRUE
+enum bool { 
+  FALSE=0,
+  TRUE=1
 };
 
 enum msg_type {
@@ -91,8 +94,8 @@ typedef struct PCB {
   struct PCB* p_next; //global process list reference
   void* process_code; //initial function for process
   jmp_buf context;
-  message_queue message_send; //send message queue
-  message_queue message_receieve; // receiving message queue
+  message_queue* message_send; //send message queue
+  message_queue* message_receive; // receiving message queue
   enum bool i_process; //is this an i_process? PCB
 
 } PCB;
@@ -108,19 +111,13 @@ typedef struct process_queue {
 } process_queue;
 
 
-priority_process_queue* _rpq; //global ready process queue
-priority_process_queue* _mwq; //global MESSAGE_WAIT process queue
-priority_process_queue* _ewq; //global ENVELOPE_WAIT queue
-message_queue* _feq; //global free envelope queue
-PCB* current_process;
-
-process_queue* _process_list;
-PCB* timer_i_process;
-PCB* keyboard_i_process;
-PCB* crt_i_process; 
-
+//helper process data structures
 caddr_t _kbd_mem_ptr, _crt_mem_ptr;
 int _kbd_pid, _crt_pid;
 int _kbd_fid, _crt_fid;
+
+//signal masking
+enum bool masked;
+sigset_t rtxmask;
 
 #endif
