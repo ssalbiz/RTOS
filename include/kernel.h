@@ -30,5 +30,8 @@ void K_send_message(int dpid, MessageEnvelope* env);
 MessageEnvelope* K_receive_message();
 int K_get_trace_buffer(MessageEnvelope* env);
 void K_register_trace(MessageEnvelope* msg, int type);
+MessageEnvelope* K_request_message_envelope(void);
+void K_release_message_envelope(MessageEnvelope* env);
+int K_request_process_status(MessageEnvelope* env);
 
 #endif

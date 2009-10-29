@@ -263,7 +263,8 @@ PCB* ppq_remove(PCB* target, priority_process_queue* ppq) {
   while (t->q_next != NULL) {
     if (t->q_next == target) {
       if (_ppq.pq_tail[priority] == t->q_next) { 
-        _ppq.pq_tail[priority] = t; 
+        _ppq.pq_tail[priority] = t;
+	t->q_next = NULL;
 	return target;
       }
       t->q_next = (t->q_next)->q_next;
@@ -289,6 +290,7 @@ PCB* pq_remove(PCB* target, process_queue* pq) {
   if (next->p_next == target) {
     if (next->p_next == pq->tail) {
       pq->tail = next;
+      next->p_next = NULL;
       return target;
     }
     next->p_next = (next->p_next)->p_next;
@@ -310,6 +312,7 @@ MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
   if (next->next == target) {
     if (next->next == mq->tail) {
       mq->tail = next;
+      next->next = NULL;
       return target;
     }
     next->next = (next->next)->next;

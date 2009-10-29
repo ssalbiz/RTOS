@@ -7,7 +7,7 @@
 
 void test_process_send() { //pid == 1
   //testing message send
-  MessageEnvelope* env = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
+  MessageEnvelope* env = request_message_envelope();
   printf("sending message to %d\n", 2);
   strcpy(env->data, "does this work?");
   send_message(2, env);
@@ -23,5 +23,8 @@ void test_process_receive() { //pid == 2
   printf("got:_%s_ from process id: %d\n", env->data, env->sender_pid);
   get_trace_buffer(env);
   printf("message trace:\n%s\n", env->data);
+  request_process_status(env);
+  printf("process status:\n%s\n", env->data);
+  release_message_envelope(env);
   while (1) release_processor();
 }

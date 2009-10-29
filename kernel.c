@@ -49,6 +49,47 @@ PCB* pid_to_PCB(int target) {
   else return NULL;
 }
 
+int K_request_process_status(MessageEnvelope* msg) {
+  PCB* next = pq_peek(_process_list);
+  char tmp_buf[20];
+  strcpy(msg->data, "");
+  while (next->p_next != NULL) {
+    sprintf(tmp_buf, "%d,%d,%d\n", next->pid, 
+    				   next->state, 
+				   next->priority);
+    strcat(msg->data, tmp_buf);
+    next = next->p_next;
+  }
+  
+  return 0;  
+}
+
+MessageEnvelope* K_request_message_envelope(void) {
+  MessageEnvelope *env = NULL;
+  while (mq_is_empty(_feq)) {
+    current_process->state = ENVELOPE_WAIT;
+    ppq_enqueue(current_process, _ewq);
+    K_process_switch();
+  }
+  env = mq_dequeue(_feq);
+  strcpy(env->data, "");
+  mq_enqueue(env, current_process->message_send);
+  return env;
+}
+
+void K_release_message_envelope(MessageEnvelope* env) {
+  strcpy(env->data, "");
+  mq_remove(env, current_process->message_send);
+  mq_remove(env, current_process->message_receive);
+  mq_enqueue(env, _feq);
+  if (!ppq_is_empty(_ewq)) {
+    PCB* nextPCB = ppq_dequeue(_ewq);
+    nextPCB->state = READY;
+    ppq_enqueue(nextPCB, _rpq);
+  }
+}
+
+
 void K_register_trace(MessageEnvelope* env, int type) {
   assert(_tq != NULL && env != NULL);
   msg_event* new_evt       = (msg_event*) malloc(sizeof(msg_event));
@@ -66,6 +107,7 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
   env->destination_pid = dest_pid;
   //assume message text and type are handled elsewhere
   PCB* target = pid_to_PCB(dest_pid);
+  mq_remove(env, current_process->message_send);
   mq_enqueue(env, target->message_receive);
   K_register_trace(env, 0);
   //do trace
@@ -165,8 +207,8 @@ void K_cleanup() {
   ppq_free(_mwq);
   trace_free(&_tq);
   if (!mq_is_empty(_feq)) {
-    mq_free(_feq);
     printf("RTX: deallocating envelope list\n");
+    mq_free(_feq);
   }
 
 }

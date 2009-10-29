@@ -62,4 +62,23 @@ int get_trace_buffer(MessageEnvelope* env) {\
   atomic(0);
   return i;
 }
-   
+
+MessageEnvelope* request_message_envelope() {
+  atomic(1);
+  MessageEnvelope* env = NULL;
+  env = K_request_message_envelope();
+  atomic(0);
+  return env;
+}
+
+void release_message_envelope(MessageEnvelope* env) {
+  atomic(1);
+  K_release_message_envelope(env);
+  atomic(0);
+}
+
+int request_process_status(MessageEnvelope* env) {
+  atomic(1);
+  K_request_process_status(env);
+  atomic(0);
+}
