@@ -11,7 +11,6 @@ void test_process_send() { //pid == 1
   printf("sending message to %d\n", 2);
   strcpy(env->data, "does this work?");
   send_message(2, env);
-  free(env);
   printf("send message successful\n");
   fflush(stdout);
   while (1) release_processor();
@@ -22,5 +21,7 @@ void test_process_receive() { //pid == 2
   printf("attemping to receive from 1\n");
   MessageEnvelope* env = receive_message();
   printf("got:_%s_ from process id: %d\n", env->data, env->sender_pid);
+  get_trace_buffer(env);
+  printf("message trace:\n%s\n", env->data);
   while (1) release_processor();
 }

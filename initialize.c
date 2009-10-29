@@ -31,11 +31,12 @@ void setup_kernel_structs() {
   ppq_allocate(&_ewq);
   pq_allocate(&_process_list);
   mq_allocate(&_feq); //message queues
-  MessageEnvelope *new;
+  trace_allocate(&_tq);
+  MessageEnvelope *new_env;
   //allocate message envelopes
   for (i = 0; i < ENVELOPES; i++) {
-    new = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
-    mq_enqueue(new, _feq);
+    new_env = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
+    mq_enqueue(new_env, _feq);
   }
 }
 
@@ -198,6 +199,7 @@ int main(int argc, char** argv) {
    }
    sleep(2);
    unmask();
+   ticks = 0;
    dispatch();
    printf("Quitting from kernel...(this means you fucked up)\n");
    terminate();

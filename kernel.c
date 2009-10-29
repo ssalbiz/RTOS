@@ -1,9 +1,6 @@
 #include "kernel.h"
 
 
-
-
-
 void K_terminate() {
   K_cleanup();
   exit(0);
@@ -52,12 +49,25 @@ PCB* pid_to_PCB(int target) {
   else return NULL;
 }
 
+void K_register_trace(MessageEnvelope* env, int type) {
+  assert(_tq != NULL && env != NULL);
+  msg_event* new_evt       = (msg_event*) malloc(sizeof(msg_event));
+  new_evt->destination_pid = env->destination_pid;
+  new_evt->source_pid      = env->sender_pid;
+  new_evt->mtype           = env->type;
+  new_evt->timestamp       = ticks / TIMER_INTERVAL;
+  new_evt->type            = type;
+  new_evt->next            = NULL;
+  trace_enqueue(new_evt, _tq);
+}
+
 void K_send_message(int dest_pid, MessageEnvelope* env) {
   env->sender_pid = current_process->pid;
   env->destination_pid = dest_pid;
   //assume message text and type are handled elsewhere
   PCB* target = pid_to_PCB(dest_pid);
   mq_enqueue(env, target->message_receive);
+  K_register_trace(env, 0);
   //do trace
   if (target->state == MESSAGE_WAIT) {
     target->state = READY;
@@ -80,9 +90,43 @@ MessageEnvelope* K_receive_message(void) {
     K_process_switch();
   }
   env = mq_dequeue(current_process->message_receive);
+  //still want the envelope associated with this process, so put it on the send queue
+  mq_enqueue(env, current_process->message_send);
   //do trace
+  K_register_trace(env, 1);
   return env;
 }
+
+int K_get_trace_buffer(MessageEnvelope* env) {
+  assert(env != NULL);
+  msg_event* evts = _tq->send;
+  int len = MESSAGE_SIZE/32;
+  char tmp_buf[len];
+  strcpy(env->data, "");
+  while(evts != NULL) {
+    sprintf(tmp_buf, "SENT:\tTO: %d,\tFR: %d,\tTIME: %d,\tTYPE: %d\n", 
+    		evts->destination_pid, 
+		evts->source_pid,
+		evts->timestamp,
+		evts->mtype);
+  
+    strcat(env->data, tmp_buf);
+    evts = evts->next;
+  }
+  evts = _tq->receive;
+  while(evts != NULL) {
+    sprintf(tmp_buf, "RCVD:\tFR: %d,\tTO: %d,\tTIME: %d,\tTYPE: %d\n", 
+    		evts->source_pid, 
+		evts->destination_pid,
+		evts->timestamp,
+		evts->mtype);
+    strcat(env->data, tmp_buf);
+    evts = evts->next;
+  }
+  free(evts);
+  return 0;
+}
+
 
     
 void K_cleanup() {
@@ -119,6 +163,7 @@ void K_cleanup() {
   ppq_free(_rpq);
   ppq_free(_ewq);
   ppq_free(_mwq);
+  trace_free(&_tq);
   if (!mq_is_empty(_feq)) {
     mq_free(_feq);
     printf("RTX: deallocating envelope list\n");

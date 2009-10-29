@@ -89,6 +89,7 @@ void trace_enqueue(msg_event* msg, trace_buffer* tq) {
         tq->send_tail = tq->send_tail->next;
       }
       msg->next = NULL;
+      tq->send_length++;
     } else {
       msg_event *tmp = trace_dequeue(tq, msg->type);
       free(tmp);
@@ -105,6 +106,7 @@ void trace_enqueue(msg_event* msg, trace_buffer* tq) {
         tq->receive_tail = tq->receive_tail->next;
       }
       msg->next = NULL;
+      tq->receive_length++;
     } else {
       msg_event *tmp = trace_dequeue(tq, msg->type);
       free(tmp);
@@ -319,29 +321,6 @@ MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
 
 //Queue deallocators
 //called at cleanup
-void pq_free(process_queue** pq) {
-  assert((*pq) != NULL);
-  PCB* next = (*pq)->head;
-  PCB* store;
-  while (next != NULL) {
-    store = next->p_next;
-    //free stack
-    assert(next->stack_head != NULL);
-    free(next->stack_head);
-    assert(next->message_send != NULL && next->message_receive != NULL);
-    free(next->message_send); 
-    free(next->message_receive);
-    free(next);
-    next = store;
-  }
-  (*pq)->head = NULL;
-  (*pq)->tail = NULL;
-  free(*pq);
-  *pq = NULL;
-}
-
-
-
 void mq_free(message_queue* mq) {
   assert(mq != NULL);
   MessageEnvelope* env = NULL;
@@ -353,6 +332,27 @@ void mq_free(message_queue* mq) {
   free(mq);
 }
 
+
+void pq_free(process_queue** pq) {
+  assert((*pq) != NULL);
+  PCB* next = (*pq)->head;
+  PCB* store;
+  while (next != NULL) {
+    store = next->p_next;
+    //free stack
+    assert(next->stack_head != NULL);
+    free(next->stack_head);
+    assert(next->message_send != NULL && next->message_receive != NULL);
+    mq_free(next->message_send);
+    mq_free(next->message_receive);
+    free(next);
+    next = store;
+  }
+  (*pq)->head = NULL;
+  (*pq)->tail = NULL;
+  free(*pq);
+  *pq = NULL;
+}
  
 int ppq_free(priority_process_queue* ppq) {
   assert(ppq != NULL);
@@ -362,23 +362,24 @@ int ppq_free(priority_process_queue* ppq) {
 return 0;
 }
 
-void trace_free(trace_buffer* tq) {
-  assert (tq != NULL);
-  msg_event* tmp  = tq->send;
+void trace_free(trace_buffer** tq) {
+  assert (*tq != NULL);
+  msg_event* tmp  = (*tq)->send;
   msg_event* next = NULL;
   while (tmp != NULL) {
     next = tmp->next;
     free(tmp);
     tmp = next;
   }
-  tmp  = tq->receive;
+  tmp  = (*tq)->receive;
   next = NULL;
   while (tmp != NULL) {
     next = tmp->next;
     free(tmp);
     tmp = next;
   }
-  free(tq);
+  free(*tq);
+  *tq = NULL;
 }
    
 

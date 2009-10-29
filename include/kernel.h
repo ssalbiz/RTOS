@@ -11,11 +11,13 @@ priority_process_queue* _mwq; //global MESSAGE_WAIT process queue
 priority_process_queue* _ewq; //global ENVELOPE_WAIT queue
 message_queue* _feq; 	      //global free envelope queue
 process_queue* _process_list;
+trace_buffer* _tq;
 PCB* timer_i_process;
 PCB* keyboard_i_process;
 PCB* crt_i_process; 
 
 jmp_buf kernel_buf;
+int ticks;
 
 void K_terminate() ;
 void K_context_switch(jmp_buf prev, jmp_buf next) ;
@@ -26,5 +28,7 @@ PCB* pid_to_PCB(int target) ;
 void K_cleanup() ;
 void K_send_message(int dpid, MessageEnvelope* env);
 MessageEnvelope* K_receive_message();
+int K_get_trace_buffer(MessageEnvelope* env);
+void K_register_trace(MessageEnvelope* msg, int type);
 
 #endif

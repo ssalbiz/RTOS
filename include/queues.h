@@ -20,7 +20,7 @@ void trace_enqueue(msg_event* env, trace_buffer* tq);
 msg_event* trace_dequeue(trace_buffer* tq, enum Event type);
 //note: trace_remove not implemented. Never used, no point
 msg_event* trace_peek(trace_buffer* tq, enum Event type);
-void trace_free(trace_buffer* tq);
+void trace_free(trace_buffer** tq);
 
 void pq_allocate(process_queue** pq); 
 int  pq_is_empty(process_queue* pq); 

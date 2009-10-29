@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #define DEBUG 1
-#define MESSAGE_SIZE 256
+#define MESSAGE_SIZE 2048
 #define MEMBLOCK_SIZE 256
 #define NUM_PROCESS 3
 #define NUM_UPROCESS 20
@@ -17,7 +18,7 @@
 #define TIMER_INTERVAL 10000
 #define TRACE_LENGTH 16
 #ifdef i386
-#define STK_OFFSET 4 //dword size (size of stack frame)
+#define STK_OFFSET 4//dword size (size of stack frame)
 #endif
 #ifdef __amd64
 #define STK_OFFSET 4 //amd64 dword??
