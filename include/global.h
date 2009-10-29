@@ -15,6 +15,7 @@
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
 #define TIMER_INTERVAL 10000
+#define TRACE_LENGTH 16
 #ifdef i386
 #define STK_OFFSET 4 //dword size (size of stack frame)
 #endif
@@ -41,6 +42,11 @@ enum Priority {
   MID=1,
   MIDLOW=2,
   LOW=MIN_PRIORITY
+};
+
+enum Event {
+  SEND=0,
+  RECEIVE=1
 };
 
 enum bool { 
@@ -70,12 +76,6 @@ typedef struct shared_mem_block {
   int size;
   char data[MEMBLOCK_SIZE];
 } shared_mem_block;
-
-typedef struct trace_message_event {
-  int sender_pid, destination_pid;
-  enum msg_type type;
-  int timestamp;
-} trace_message_event;
 
 typedef struct message_queue {
   MessageEnvelope* head;
@@ -109,6 +109,20 @@ typedef struct process_queue {
   PCB* head;
   PCB* tail;
 } process_queue;
+
+typedef struct msg_event {
+  int destination_pid, source_pid;
+  int timestamp; //in absolute seconds since system start
+  enum msg_type mtype; //type of message sent/rcv'd
+  enum Event type; //type of msg event, (ie sent or received)
+  struct msg_event *next;
+} msg_event;
+
+typedef struct trace_buffer {
+  int send_length, receive_length; //to maintain fixed size
+  msg_event* send, *send_tail;
+  msg_event* receive, *receive_tail;
+} trace_buffer;
 
 
 //helper process data structures
