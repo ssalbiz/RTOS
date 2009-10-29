@@ -23,6 +23,7 @@ void test_process_receive() { //pid == 2
   printf("got:_%s_ from process id: %d\n", env->data, env->sender_pid);
   get_trace_buffer(env);
   printf("message trace:\n%s\n", env->data);
+  change_priority(MIN_PRIORITY, 2);
   request_process_status(env);
   printf("process status:\n%s\n", env->data);
   release_message_envelope(env);

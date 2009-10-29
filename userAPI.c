@@ -81,4 +81,12 @@ int request_process_status(MessageEnvelope* env) {
   atomic(1);
   K_request_process_status(env);
   atomic(0);
+return 0;
+}
+
+int change_priority(int new_priority, int target_pid) {
+  atomic(1);
+  K_change_priority(new_priority, target_pid);
+  atomic(0);
+return 0;
 }

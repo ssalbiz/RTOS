@@ -14,6 +14,7 @@ int get_trace_buffer(MessageEnvelope* env);
 MessageEnvelope* request_message_envelope();
 void release_message_envelope(MessageEnvelope* env);
 int request_process_status(MessageEnvelope* env);
+int change_priority(int new_priority, int target_pid);
 #endif
 
 

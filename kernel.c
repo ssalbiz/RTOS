@@ -53,7 +53,7 @@ int K_request_process_status(MessageEnvelope* msg) {
   PCB* next = pq_peek(_process_list);
   char tmp_buf[20];
   strcpy(msg->data, "");
-  while (next->p_next != NULL) {
+  while (next != NULL) {
     sprintf(tmp_buf, "%d,%d,%d\n", next->pid, 
     				   next->state, 
 				   next->priority);
@@ -63,6 +63,23 @@ int K_request_process_status(MessageEnvelope* msg) {
   
   return 0;  
 }
+
+int K_change_priority(int new_priority, int target_pid) {
+  PCB* target = pid_to_PCB(target_pid);
+  if (target == current_process) {
+    target->priority = new_priority;
+    return 0;
+  } else {
+    switch(target->state) {
+      case READY: ppq_remove(target, _rpq); ppq_enqueue(target, _rpq); break;
+      case MESSAGE_WAIT: ppq_remove(target, _mwq); ppq_enqueue(target, _mwq); break;
+      case ENVELOPE_WAIT: ppq_remove(target, _ewq); ppq_enqueue(target, _ewq); break;
+      default: break;
+    }
+  }
+  return 0;
+}
+
 
 MessageEnvelope* K_request_message_envelope(void) {
   MessageEnvelope *env = NULL;

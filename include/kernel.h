@@ -33,5 +33,6 @@ void K_register_trace(MessageEnvelope* msg, int type);
 MessageEnvelope* K_request_message_envelope(void);
 void K_release_message_envelope(MessageEnvelope* env);
 int K_request_process_status(MessageEnvelope* env);
+int K_change_priority(int new_priority, int target_pid);
 
 #endif
