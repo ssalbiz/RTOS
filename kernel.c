@@ -80,6 +80,23 @@ int K_change_priority(int new_priority, int target_pid) {
   return 0;
 }
 
+int K_request_delay(int timeout, int wakeup, MessageEnvelope* env) {
+  env->timeout_ticks = timeout;
+  env->type = wakeup;
+  env->destination_pid = current_process->pid;
+  K_send_message(timer_i_process->pid, env);
+  return 0;
+}
+
+int K_send_console_chars(MessageEnvelope* env) {
+  //write env->data to shared memory
+  return 0;
+}
+
+int K_get_console_chars(MessageEnvelope* env) {
+  //read from shared memory into env
+  return 0;
+}
 
 MessageEnvelope* K_request_message_envelope(void) {
   MessageEnvelope *env = NULL;

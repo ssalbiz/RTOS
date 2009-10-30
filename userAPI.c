@@ -90,3 +90,24 @@ int change_priority(int new_priority, int target_pid) {
   atomic(0);
 return 0;
 }
+
+int request_delay(int timeout, int wakeup, MessageEnvelope* env) {
+  atomic(1);
+  int ret = K_request_delay(timeout, wakeup, env);
+  atomic(0);
+  return ret;
+}
+
+int send_console_chars(MessageEnvelope* env) {
+  atomic(1);
+  int ret = K_send_console_chars(env);
+  atomic(0);
+  return ret;
+}
+
+int get_console_chars(MessageEnvelope* env) {
+  atomic(1);
+  int ret = K_get_console_chars(env);
+  atomic(0);
+  return ret;
+}
