@@ -13,14 +13,29 @@ int mask() {
     return 0;
 }
 
+int register_handler(int signal) {
+    struct sigaction sa;
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGINT);
+    sigaddset(&sa.sa_mask, SIGUSR1);
+    sigaddset(&sa.sa_mask, SIGUSR2);
+    sigaddset(&sa.sa_mask, SIGALRM);
+    sa.sa_flags = SA_RESTART; 
+    if (sigaction(signal, &sa, NULL) == -1) 
+      return -1;
+    else 
+      return 0;
+}
+
 int register_handlers() {
-  sigset(SIGILL,  signal_handler);
-  sigset(SIGSEGV, signal_handler);
-  sigset(SIGHUP,  signal_handler);
-  sigset(SIGINT,  signal_handler);
-  sigset(SIGUSR1, signal_handler);
-  sigset(SIGUSR2, signal_handler);
-  sigset(SIGALRM, signal_handler);
+//  sigset(SIGILL,  signal_handler);
+//  sigset(SIGSEGV, signal_handler);
+  register_handler(SIGHUP);
+  register_handler(SIGINT);
+  register_handler(SIGUSR1);
+  register_handler(SIGUSR2);
+  register_handler(SIGALRM);
 return 0;
 }
 
@@ -71,9 +86,9 @@ void init_process_context(PCB* target) {
       if (setjmp(newPCB->context) == 0) {
         longjmp(kernel_buf, 1);
       } else {
-	atomic(0);//make context switches atomic
         void (*tmp) (); //since context will only be restored when the process is selected for execution
         tmp = (void*) current_process->process_code;
+	atomic(0);//make context switches atomic
         tmp();
       }
     }

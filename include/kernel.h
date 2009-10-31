@@ -2,6 +2,7 @@
 #define KERNEL_H
 #include "queues.h"
 #include "global.h"
+#include "userAPI.h"
 #include <sys/mman.h>
 
 //kernel data structures

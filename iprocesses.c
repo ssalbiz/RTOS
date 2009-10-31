@@ -35,17 +35,25 @@ return;
 void signal_handler(int signal) {
   //signal handler considered trusted code
   atomic(1);
+#ifdef DEBUG
   printf("signal %d received...\n", signal);
   fflush(stdout);
+#endif
   interrupted_process = current_process;
+  if (current_process == NULL) {
+#ifdef DEBUG
+    printf("NULL current process?\n");
+    terminate();
+#endif
+  }
   current_process->state = INTERRUPTED;
 
     switch(signal) {
-      case SIGINT: K_terminate(); break;
+      case SIGINT: terminate(); break;
       case SIGALRM: current_process = timer_i_process;
                     timer_service();
     		    break;
-      default: K_terminate(); break;
+      default: terminate(); break;
     }
 #ifdef DEBUG
   printf("leaving handler\n");
@@ -53,7 +61,12 @@ void signal_handler(int signal) {
 #endif
   current_process = interrupted_process;
   interrupted_process = NULL;
-  assert(current_process != NULL);
+  if (current_process == NULL) {
+#ifdef DEBUG
+    printf("NULL current process?\n");
+    terminate();
+#endif
+  }
   current_process->state = EXECUTING;
   atomic(0);
 }

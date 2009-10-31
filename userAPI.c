@@ -2,18 +2,21 @@
 
 int atomic(int state) { 
   sigset_t newmask;
-  if (state && !masked) {
+  if (state && masked != TRUE) {
     masked = TRUE;
     sigemptyset(&newmask);
     sigaddset(&newmask, SIGINT);
     sigaddset(&newmask, SIGUSR1);
     sigaddset(&newmask, SIGUSR2);
     sigaddset(&newmask, SIGALRM);
-    if (sigprocmask(SIG_BLOCK, &newmask, &rtxmask) != 0) 
+    if (sigprocmask(SIG_BLOCK, &newmask, &rtxmask) != 0) {
+          printf("OH NOES\n");
 	  return -1;
-    else
+    } else {
           return 0;
+    }
   } else {
+    masked = FALSE;
     if (sigprocmask(SIG_SETMASK, &rtxmask, NULL) != 0) 
 	return -1;
     else 

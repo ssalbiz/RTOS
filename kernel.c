@@ -2,6 +2,7 @@
 
 
 void K_terminate() {
+  atomic(1);
   K_cleanup();
   exit(0);
 }
@@ -35,7 +36,7 @@ void K_release_processor() {
 
 void null_process() {
   while(1) {
-    K_release_processor(); //trusted kernel process
+    release_processor(); //trusted kernel process
   }
 }
 
@@ -207,6 +208,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
     
 void K_cleanup() {
   printf("RTX: sending signal\n");
+  sleep(2);
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
   
@@ -233,20 +235,32 @@ void K_cleanup() {
 
   if (!pq_is_empty(_process_list)) { 
     pq_free(&_process_list);
+#ifdef DEBUG
+    printf("RTX: deallocating global process list\n");
+    printf("RTX: deallocating i_processes\n");
+#endif
     //free i_processes
+    assert(timer_i_process != NULL);
+    assert(keyboard_i_process!= NULL);
+    assert(crt_i_process != NULL);
+#ifdef DEBUG
+    printf("RTX: deallocating i_processes message queues\n");
+#endif
     mq_free(timer_i_process->message_send);
     mq_free(timer_i_process->message_receive);
     mq_free(keyboard_i_process->message_send);
     mq_free(keyboard_i_process->message_receive);
     mq_free(crt_i_process->message_send);
     mq_free(crt_i_process->message_receive);
+#ifdef DEBUG
+    printf("RTX: deallocating i_process stacks\n");
+#endif
     free(timer_i_process->stack_head);
     free(crt_i_process->stack_head);
     free(keyboard_i_process->stack_head);
     free(timer_i_process);
     free(crt_i_process);
     free(keyboard_i_process);
-    printf("RTX: deallocating global process list\n");
   }
   //since PCBs have all been freed, no need to free more
   ppq_free(_rpq);

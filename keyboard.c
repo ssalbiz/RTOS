@@ -9,6 +9,21 @@ void die() {
   exit(1);
 }
 
+int register_handler(int signal) {
+    struct sigaction sa;
+    sa.sa_handler = die;
+    sigemptyset(&sa.sa_mask);
+    sigaddset(&sa.sa_mask, SIGINT);
+    sigaddset(&sa.sa_mask, SIGUSR1);
+    sigaddset(&sa.sa_mask, SIGUSR2);
+    sigaddset(&sa.sa_mask, SIGALRM);
+    sa.sa_flags = SA_RESTART; 
+    if (sigaction(signal, &sa, NULL) == -1) 
+      return -1;
+    else 
+      return 0;
+}
+
 void unmask() {
   sigset_t newmask;
   sigemptyset(&newmask);
@@ -20,7 +35,7 @@ void unmask() {
 }
 
 void register_handlers() {
-  sigset(SIGINT, die);
+  register_handler(SIGINT);
 }
 int parent_pid, fid, mem_size;
 
