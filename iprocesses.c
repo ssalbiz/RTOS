@@ -1,7 +1,33 @@
 #include "iprocesses.h"
 
+void timeout_enqueue(MessageEnvelope* env, message_queue* mq) {
+return;
+}
+
 void timer_service(void) {
+  MessageEnvelope* env = NULL;
+  do {
+    env = K_receive_message();
+    timeout_enqueue(env, _timeout);
+  } while (env != NULL);
+  ticks++;
+  if (ticks %10 == 0) {
+    _timeout->head->timeout_ticks--;
+    if (_timeout->head->timeout_ticks <= 0) {
+      env = mq_dequeue(_timeout);
+      PCB* ptr = pid_to_PCB(env->sender_pid);
+      K_send_message(env->sender_pid, env); //send wakeup message
+      ptr->state = READY;
+      ppq_enqueue(ptr, _rpq); //wakeup process
+    }
+    seconds++;
+    update_clock();
+  }
   return;
+}
+
+void update_clock() {
+return;
 }
 
 void signal_handler(int signal) {

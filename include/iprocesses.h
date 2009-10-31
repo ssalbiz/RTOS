@@ -9,6 +9,7 @@ jmp_buf interrupted;
 
 
 void timer_service(void);
+void timeout_enqueue(MessageEnvelope* msg, message_queue* mq);
 void keyboard_service(void);
 void crt_service(void);
 void update_clock(void);
