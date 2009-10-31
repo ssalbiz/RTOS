@@ -12,13 +12,15 @@ void timer_service(void) {
   } while (env != NULL);
   ticks++;
   if (ticks %10 == 0) {
-    _timeout->head->timeout_ticks--;
-    if (_timeout->head->timeout_ticks <= 0) {
-      env = mq_dequeue(_timeout);
-      PCB* ptr = pid_to_PCB(env->sender_pid);
-      K_send_message(env->sender_pid, env); //send wakeup message
-      ptr->state = READY;
-      ppq_enqueue(ptr, _rpq); //wakeup process
+    if (!mq_is_empty(_timeout)) {
+      _timeout->head->timeout_ticks--;
+      if (_timeout->head->timeout_ticks <= 0) {
+        env = mq_dequeue(_timeout);
+        PCB* ptr = pid_to_PCB(env->sender_pid);
+        K_send_message(env->sender_pid, env); //send wakeup message
+        ptr->state = READY;
+        ppq_enqueue(ptr, _rpq); //wakeup process
+      }
     }
     seconds++;
     update_clock();
@@ -31,27 +33,23 @@ return;
 }
 
 void signal_handler(int signal) {
-  printf("signal %d received...\n", signal);
   //signal handler considered trusted code
   atomic(1);
+  printf("signal %d received...\n", signal);
+  fflush(stdout);
   interrupted_process = current_process;
   current_process->state = INTERRUPTED;
 
-  if (setjmp(interrupted) == 0) { //save context of currently executing process
     switch(signal) {
       case SIGINT: K_terminate(); break;
-      case SIGALRM: //do i_proc voodoo
-                    longjmp(interrupted, 1);
+      case SIGALRM: current_process = timer_i_process;
+                    timer_service();
     		    break;
-      case SIGUSR1: longjmp(interrupted, 1); 
-      		    break;
-      case SIGUSR2: longjmp(interrupted, 1);
-      		    break;
       default: K_terminate(); break;
     }
-  }
 #ifdef DEBUG
-  printf("leaving signal handler\n");
+  printf("leaving handler\n");
+  fflush(stdout);
 #endif
   current_process = interrupted_process;
   interrupted_process = NULL;

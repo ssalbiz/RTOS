@@ -216,9 +216,9 @@ void K_cleanup() {
     stat = munmap(_kbd_mem_ptr, MEMBLOCK_SIZE);
     if (DEBUG && stat == -1) {printf("RTX: Error unmapping keyboard share\n");} else {printf("RTX: SUCCESS\n");}
     stat = close(_kbd_fid);
-    if (DEBUG && stat == -1) {printf("RTX: Error unmapping keyboard share\n");} else {printf("RTX: SUCCESS\n");}
+    if (DEBUG && stat == -1) {printf("RTX: Error closing keyboard share file\n");} else {printf("RTX: SUCCESS\n");}
     stat = unlink(KEYBOARD_FILE);
-    if (DEBUG && stat == -1) {printf("RTX: Error unmapping keyboard share\n");} else {printf("RTX: SUCCESS\n");}
+    if (DEBUG && stat == -1) {printf("RTX: Error removing keyboard share file\n");} else {printf("RTX: SUCCESS\n");}
 
   }
   if (_crt_mem_ptr != NULL) {
