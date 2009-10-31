@@ -5,6 +5,9 @@
 #include <global.h>
 #include "userAPI.h"
 #include <signal.h>
+jmp_buf interrupted;
+
+
 void timer_service(void);
 void keyboard_service(void);
 void crt_service(void);

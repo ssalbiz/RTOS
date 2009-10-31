@@ -11,12 +11,16 @@ void signal_handler(int signal) {
   interrupted_process = current_process;
   current_process->state = INTERRUPTED;
 
-  if (setjmp(interrupted_process->context) == 0) {
+  if (setjmp(interrupted) == 0) { //save context of currently executing process
     switch(signal) {
       case SIGINT: K_terminate(); break;
       case SIGALRM: //do i_proc voodoo
-                    longjmp(interrupted_process->context, 1);
-    		 break;
+                    longjmp(interrupted, 1);
+    		    break;
+      case SIGUSR1: longjmp(interrupted, 1); 
+      		    break;
+      case SIGUSR2: longjmp(interrupted, 1);
+      		    break;
       default: K_terminate(); break;
     }
   }
