@@ -40,12 +40,6 @@ void signal_handler(int signal) {
   fflush(stdout);
 #endif
   interrupted_process = current_process;
-  if (current_process == NULL) {
-#ifdef DEBUG
-    printf("NULL current process?\n");
-    terminate();
-#endif
-  }
   current_process->state = INTERRUPTED;
 
     switch(signal) {
@@ -61,12 +55,6 @@ void signal_handler(int signal) {
 #endif
   current_process = interrupted_process;
   interrupted_process = NULL;
-  if (current_process == NULL) {
-#ifdef DEBUG
-    printf("NULL current process?\n");
-    terminate();
-#endif
-  }
   current_process->state = EXECUTING;
   atomic(0);
 }
