@@ -31,6 +31,7 @@ void setup_kernel_structs() {
   ppq_allocate(&_ewq);
   pq_allocate(&_process_list);
   mq_allocate(&_feq); //message queues
+  mq_allocate(&_timeout);
   trace_allocate(&_tq);
   MessageEnvelope *new_env;
   //allocate message envelopes
@@ -101,6 +102,24 @@ void init_processes() { //initialize PCB properties from init table and start co
     ppq_enqueue(newPCB, _rpq);
     init_process_context(newPCB);
   }
+  //allocate i_processes, dont touch context
+  PCB** ip[] = {&timer_i_process, &keyboard_i_process, &crt_i_process};
+  for (i = 0; i < I_PROCS; i++) {
+    (*ip[i]) = (PCB*) malloc(sizeof(PCB));
+    (*ip[i])->pid        = 0; //kernel
+    (*ip[i])->priority   = MAX_PRIORITY; //KERNEL
+    (*ip[i])->stack_size = I_STACK_SIZE; //KER-NEL
+    (*ip[i])->stack = ((char*)malloc((*ip[i])->stack_size)) + (*ip[i])->stack_size - STK_OFFSET;
+    (*ip[i])->stack_head = (*ip[i])->stack - (*ip[i])->stack_size + STK_OFFSET;
+    (*ip[i])->state      = READY;
+    (*ip[i])->q_next     = NULL;
+    (*ip[i])->p_next     = NULL;
+    (*ip[i])->process_code = NULL;
+    mq_allocate(&((*ip[i])->message_send));
+    mq_allocate(&((*ip[i])->message_receive));
+  }
+    
+
 }
 
 

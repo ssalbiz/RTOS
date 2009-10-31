@@ -233,6 +233,19 @@ void K_cleanup() {
 
   if (!pq_is_empty(_process_list)) { 
     pq_free(&_process_list);
+    //free i_processes
+    mq_free(timer_i_process->message_send);
+    mq_free(timer_i_process->message_receive);
+    mq_free(keyboard_i_process->message_send);
+    mq_free(keyboard_i_process->message_receive);
+    mq_free(crt_i_process->message_send);
+    mq_free(crt_i_process->message_receive);
+    free(timer_i_process->stack_head);
+    free(crt_i_process->stack_head);
+    free(keyboard_i_process->stack_head);
+    free(timer_i_process);
+    free(crt_i_process);
+    free(keyboard_i_process);
     printf("RTX: deallocating global process list\n");
   }
   //since PCBs have all been freed, no need to free more
@@ -242,6 +255,7 @@ void K_cleanup() {
   trace_free(&_tq);
   if (!mq_is_empty(_feq)) {
     printf("RTX: deallocating envelope list\n");
+    mq_free(_timeout);
     mq_free(_feq);
   }
 
