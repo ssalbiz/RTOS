@@ -148,7 +148,7 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
   if (target->state == MESSAGE_WAIT) {
     target->state = READY;
     ppq_remove(target, _mwq);
-    ppq_enqueue(target, _mwq);
+    ppq_enqueue(target, _rpq);
   }
 }
 

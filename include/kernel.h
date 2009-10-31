@@ -10,14 +10,20 @@ priority_process_queue* _rpq; //global ready process queue
 priority_process_queue* _mwq; //global MESSAGE_WAIT process queue
 priority_process_queue* _ewq; //global ENVELOPE_WAIT queue
 message_queue* _feq; 	      //global free envelope queue
+message_queue* _timeout;      //message timeout queue
 process_queue* _process_list;
 trace_buffer* _tq;
+
+//signal handlers
 PCB* timer_i_process;
 PCB* keyboard_i_process;
 PCB* crt_i_process; 
+PCB* interrupted_process;
 
 jmp_buf kernel_buf;
-int ticks;
+int ticks, seconds;//absolute time since RTX start
+
+int wall_hr, wall_min, wall_sec;
 
 void K_terminate() ;
 void K_context_switch(jmp_buf prev, jmp_buf next) ;
