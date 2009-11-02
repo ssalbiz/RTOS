@@ -8,7 +8,8 @@ void timer_service(void) {
   MessageEnvelope* env = NULL;
   do {
     env = K_receive_message();
-    timeout_enqueue(env, _timeout);
+    if (env != NULL)
+      timeout_enqueue(env, _timeout);
   } while (env != NULL);
   ticks++;
   if (ticks %10 == 0) {

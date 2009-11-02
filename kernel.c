@@ -84,7 +84,7 @@ int K_change_priority(int new_priority, int target_pid) {
 int K_request_delay(int timeout, int wakeup, MessageEnvelope* env) {
   env->timeout_ticks = timeout;
   env->type = wakeup;
-  env->destination_pid = current_process->pid;
+  env->sender_pid = current_process->pid;
   K_send_message(timer_i_process->pid, env);
   return 0;
 }
