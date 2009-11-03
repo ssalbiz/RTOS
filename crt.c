@@ -1,4 +1,5 @@
 #include<signal.h>
+#include<curses.h>
 #include<stdio.h>
 #include<stdlib.h>
 
@@ -47,6 +48,9 @@ int main(int argc, char** argv) {
   sscanf(argv[2], "%d", &mem_size);
   printf("CRT: %d %d %d\n", parent_pid, mem_size, fid);
   unmask();
+
+  
+
   while(1) { }
   return 0; 
 }

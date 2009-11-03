@@ -28,6 +28,12 @@ void timer_service(void) {
 }
 
 void update_clock() {
+  if (++wall_sec >= 60)
+    if (++wall_min >= 60) 
+      ++wall_hr;
+  wall_sec %= 60;
+  wall_min %= 60;
+  wall_hr  %= 24;
 return;
 }
 

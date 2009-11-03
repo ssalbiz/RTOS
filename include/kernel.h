@@ -45,5 +45,6 @@ int K_change_priority(int new_priority, int target_pid);
 int K_request_delay(int timeout, int wakeup, MessageEnvelope* env);
 int K_get_console_chars(MessageEnvelope* env);
 int K_send_console_chars(MessageEnvelope* env);
+void K_set_wall_clock(int h, int m, int s);
 
 #endif

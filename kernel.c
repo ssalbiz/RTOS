@@ -40,6 +40,12 @@ void null_process() {
   }
 }
 
+void K_set_wall_clock(int hrs, int min, int sec) {
+  wall_hr = hrs % 24;
+  wall_min = min % 60;
+  wall_sec = sec % 60;
+}
+
 
 PCB* pid_to_PCB(int target) {
   //re-implement with pid array/hashtable. O(n) lookup is terrible

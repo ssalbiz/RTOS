@@ -1,5 +1,11 @@
 #include "userAPI.h"
 
+void set_wall_clock(int hrs, int min, int sec) {
+  atomic(1);
+  K_set_wall_clock(hrs % 24, min % 60, sec % 60);
+  atomic(0);
+}
+
 int atomic(int state) { 
   sigset_t newmask;
   if (state && masked != TRUE) {
@@ -98,6 +104,18 @@ int u_sleep(int timeout, MessageEnvelope* msg) {
   atomic(1);
   int ret = K_request_delay(timeout, WAKEUP, msg);
   msg = K_receive_message();
+  MessageEnvelope* tmp = NULL, *tail_ptr = NULL;
+  tail_ptr = msg;
+  tmp = msg;
+  while (msg->type != WAKEUP) { //continue until we get a wakeup code
+     tail_ptr->next = K_receive_message();
+     msg = tail_ptr->next;
+     tail_ptr = tail_ptr->next;
+  }
+  //put this hacked queue of messages back into the message received queue
+  current_process->message_receive->head = tmp;
+  current_process->message_receive->tail = tail_ptr;
+
   atomic(0);
   return ret;
 }
