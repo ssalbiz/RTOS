@@ -299,8 +299,9 @@ void K_cleanup() {
 #ifdef DEBUG
     printf("RTX: deallocating envelope list\n");
 #endif
-    mq_free(_timeout);
+//    mq_free(_timeout);
     mq_free(_feq);
+    free(_timeout);
   }
 
 }
