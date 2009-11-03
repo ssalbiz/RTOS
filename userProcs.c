@@ -5,20 +5,20 @@
 #include "userAPI.h"
 
 
-void test_process_send() { //pid == 1
+void test_process_send() { //pid == 3
   //testing message send
   MessageEnvelope* env = request_message_envelope();
   printf("sending message to %d\n", 2);
-  request_delay(200, 1, env);
+  request_delay(10, 1, env);
   env = receive_message();
   strcpy(env->data, "does this work?");
-  send_message(2, env);
+  send_message(4, env);
   printf("send message successful\n");
   fflush(stdout);
   while (1) release_processor();
 }
 
-void test_process_receive() { //pid == 2
+void test_process_receive() { //pid == 4
   //testing message recieve
   printf("attemping to receive from 1\n");
   MessageEnvelope* env = receive_message();

@@ -16,7 +16,6 @@ int atomic(int state) {
     sigaddset(&newmask, SIGUSR2);
     sigaddset(&newmask, SIGALRM);
     if (sigprocmask(SIG_BLOCK, &newmask, &rtxmask) != 0) {
-          printf("OH NOES\n");
 	  return -1;
     } else {
           return 0;

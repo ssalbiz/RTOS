@@ -121,7 +121,7 @@ void init_processes() { //initialize PCB properties from init table and start co
   PCB** ip[] = {&timer_i_process, &keyboard_i_process, &crt_i_process};
   for (i = 0; i < I_PROCS; i++) {
     (*ip[i]) = (PCB*) malloc(sizeof(PCB));
-    (*ip[i])->pid        = 0; //kernel
+    (*ip[i])->pid        = i; //kernel processes get low pnums
     (*ip[i])->priority   = MAX_PRIORITY; //KERNEL
     (*ip[i])->stack_size = I_STACK_SIZE; //KER-NEL
     (*ip[i])->stack = ((char*)malloc((*ip[i])->stack_size)) + (*ip[i])->stack_size - STK_OFFSET;

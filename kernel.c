@@ -49,6 +49,10 @@ void K_set_wall_clock(int hrs, int min, int sec) {
 
 PCB* pid_to_PCB(int target) {
   //re-implement with pid array/hashtable. O(n) lookup is terrible
+  if (target == timer_i_process->pid) return timer_i_process;
+  else if (target == keyboard_i_process->pid) return keyboard_i_process;
+  else if (target == crt_i_process->pid) return crt_i_process;
+        
   PCB* next = pq_peek(_process_list);
   while (next != NULL && next->pid != target)
 	next  = next->p_next;
@@ -76,6 +80,10 @@ int K_change_priority(int new_priority, int target_pid) {
   if (target == current_process) {
     target->priority = new_priority;
     return 0;
+  } else if (target == timer_i_process ||
+  	     target == keyboard_i_process ||
+	     target == crt_i_process) {
+    return -1; //Illegal operation!
   } else {
     switch(target->state) {
       case READY: ppq_remove(target, _rpq); ppq_enqueue(target, _rpq); break;
@@ -89,7 +97,7 @@ int K_change_priority(int new_priority, int target_pid) {
 
 int K_request_delay(int timeout, int wakeup, MessageEnvelope* env) {
   env->timeout_ticks = timeout;
-  env->type = wakeup;
+  env->type = WAKEUP;
   env->sender_pid = current_process->pid;
   K_send_message(timer_i_process->pid, env);
   return 0;
@@ -213,7 +221,9 @@ int K_get_trace_buffer(MessageEnvelope* env) {
 
     
 void K_cleanup() {
+#ifdef DEBUG
   printf("RTX: sending signal\n");
+#endif
   sleep(2);
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
@@ -222,21 +232,33 @@ void K_cleanup() {
   if (_kbd_mem_ptr != NULL) {
     printf("RTX: unmapping keyboard share\n");
     stat = munmap(_kbd_mem_ptr, MEMBLOCK_SIZE);
-    if (DEBUG && stat == -1) {printf("RTX: Error unmapping keyboard share\n");} else {printf("RTX: SUCCESS\n");}
+#ifdef DEBUG
+    if (stat == -1) {printf("RTX: Error unmapping keyboard share\n");} else {printf("RTX: SUCCESS\n");}
+#endif
     stat = close(_kbd_fid);
-    if (DEBUG && stat == -1) {printf("RTX: Error closing keyboard share file\n");} else {printf("RTX: SUCCESS\n");}
+#ifdef DEBUG
+    if (stat == -1) {printf("RTX: Error closing keyboard share file\n");} else {printf("RTX: SUCCESS\n");}
+#endif
     stat = unlink(KEYBOARD_FILE);
-    if (DEBUG && stat == -1) {printf("RTX: Error removing keyboard share file\n");} else {printf("RTX: SUCCESS\n");}
+#ifdef DEBUG
+    if (stat == -1) {printf("RTX: Error removing keyboard share file\n");} else {printf("RTX: SUCCESS\n");}
+#endif
 
   }
   if (_crt_mem_ptr != NULL) {
     printf("RTX: unmapping crt share\n");
     stat = munmap(_crt_mem_ptr, MEMBLOCK_SIZE);
-    if (DEBUG && stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
+#ifdef DEBUG
+    if (stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
+#endif
     stat = close(_crt_fid);
-    if (DEBUG && stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
+#ifdef DEBUG
+    if (stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
+#endif
     stat = unlink(CRT_FILE);
-    if (DEBUG && stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
+#ifdef DEBUG
+    if (stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
+#endif
   }
 
   if (!pq_is_empty(_process_list)) { 
@@ -274,7 +296,9 @@ void K_cleanup() {
   ppq_free(_mwq);
   trace_free(&_tq);
   if (!mq_is_empty(_feq)) {
+#ifdef DEBUG
     printf("RTX: deallocating envelope list\n");
+#endif
     mq_free(_timeout);
     mq_free(_feq);
   }
