@@ -17,8 +17,8 @@ void timer_service(void) {
       _timeout->head->timeout_ticks--;
       if (_timeout->head->timeout_ticks <= 0) {
         env = mq_dequeue(_timeout);
-        PCB* ptr = pid_to_PCB(env->sender_pid);
         K_send_message(env->sender_pid, env); //send wakeup message
+	//wakeup message if it is on the timeout accomplised
       }
     }
     seconds++;
