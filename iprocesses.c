@@ -19,8 +19,6 @@ void timer_service(void) {
         env = mq_dequeue(_timeout);
         PCB* ptr = pid_to_PCB(env->sender_pid);
         K_send_message(env->sender_pid, env); //send wakeup message
-        ptr->state = READY;
-        ppq_enqueue(ptr, _rpq); //wakeup process
       }
     }
     seconds++;
