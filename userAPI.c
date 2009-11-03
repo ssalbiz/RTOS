@@ -94,6 +94,14 @@ int change_priority(int new_priority, int target_pid) {
 return 0;
 }
 
+int u_sleep(int timeout, MessageEnvelope* msg) {
+  atomic(1);
+  int ret = K_request_delay(timeout, WAKEUP, msg);
+  msg = K_receive_message();
+  atomic(0);
+  return ret;
+}
+
 int request_delay(int timeout, int wakeup, MessageEnvelope* env) {
   atomic(1);
   int ret = K_request_delay(timeout, wakeup, env);
