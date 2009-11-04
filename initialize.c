@@ -235,8 +235,8 @@ int main(int argc, char** argv) {
    }
    masked = FALSE;
    sleep(2);
-   unmask();
    ticks = 0;
+   unmask();
    ualarm(TIMER_INTERVAL, TIMER_INTERVAL);
    dispatch();
    printf("Quitting from kernel...(this means you fucked up)\n");

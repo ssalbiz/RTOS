@@ -63,13 +63,15 @@ int main(int argc, char** argv) {
   local_buffer[0] = '\0';
   unmask();
   while(1) {
-    while (buffer->flag != MEM_DONE)
+    while (buffer->flag != MEM_DONE) {
+      kill(parent_pid, SIGUSR2);
       sleep(1); //1-sec polling
+    }
     strncpy(local_buffer, buffer->data, mem_size); //RTX in charge or null termination
     buffer->length = 0;
     buffer->flag = MEM_READY;
     if (strlen(local_buffer) > 0)
-      printf("%s\n", local_buffer);
+      printf("OUTPUT:%s\n", local_buffer);
   }
   return 0; 
 }

@@ -11,7 +11,8 @@ void test_process_send() { //pid == 3
   get_console_chars(env);
   env = receive_message();
   printf("input:_%s_\n", env->data);
-  
+  send_console_chars(env);
+  env = receive_message();
   printf("sending message to %d\n", 2);
   request_delay(10, 1, env);
   env = receive_message();

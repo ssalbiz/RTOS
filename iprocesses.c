@@ -97,7 +97,7 @@ void crt_service(void) {
     if (env != NULL) {
       buffer = (mem_buffer*) _crt_mem_ptr;
       if (buffer->flag == MEM_READY) {
-        strncpy(buffer->data, env->data, MIN(buffer->length, MESSAGE_SIZE));
+        strncpy(buffer->data, env->data, MESSAGE_SIZE);
 	buffer->flag = MEM_DONE;
 	K_send_message(env->sender_pid, env);
       } else { //pretend envelope not received. Wait for next invocation
@@ -118,6 +118,7 @@ void signal_handler(int signal) {
 //  printf("signal %d received...\n", signal);
   fflush(stdout);
 #endif
+  if (current_process == NULL) { atomic(0); return; }
   interrupted_process = current_process;
   current_process->state = INTERRUPTED;
 
