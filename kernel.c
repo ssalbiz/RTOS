@@ -104,12 +104,18 @@ int K_request_delay(int timeout, int wakeup, MessageEnvelope* env) {
 }
 
 int K_send_console_chars(MessageEnvelope* env) {
-  //write env->data to shared memory
+  assert(env != NULL);
+  env->type = CONSOLE_OUTPUT;
+  K_send_message(crt_i_process->pid, env);
+  //let iprocess write env->data to shared memory
   return 0;
 }
 
 int K_get_console_chars(MessageEnvelope* env) {
   //read from shared memory into env
+  assert(env != NULL);
+  env->type = CONSOLE_INPUT;
+  K_send_message(keyboard_i_process->pid, env);
   return 0;
 }
 

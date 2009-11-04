@@ -68,6 +68,47 @@ void update_clock() {
 return;
 }
 
+void keyboard_service(void) {
+  MessageEnvelope* env = NULL;
+  mem_buffer* buffer;
+  do {
+    env = K_receive_message();
+    if (env != NULL) {
+      buffer = (mem_buffer*) _kbd_mem_ptr;
+      //keyboard process responsible for null termination
+      if (buffer->flag == MEM_READY) {
+        strncpy(env->data, buffer->data, MIN(buffer->length, MESSAGE_SIZE)); //preprocessor hacks
+	buffer->flag = MEM_DONE; //done reading
+      } else {//this should be always true since the keyboard is only going to send the signal when its ready
+        //pretend we never received the envelope. Remove from the send queue and re-enqueue to receive
+	mq_remove(env, keyboard_i_process->message_send);
+	mq_enqueue(env, keyboard_i_process->message_receive);
+      }
+    } 
+  } while (env != NULL);
+}
+
+void crt_service(void) {
+  MessageEnvelope *env = NULL;
+  mem_buffer* buffer = NULL;
+  do {
+    env = K_receive_message();
+    if (env != NULL) {
+      buffer = (mem_buffer*) _crt_mem_ptr;
+      if (buffer->flag == MEM_READY) {
+        strncpy(buffer->data, env->data, MIN(buffer->length, MESSAGE_SIZE));
+	buffer->flag = MEM_DONE;
+      } else { //pretend envelope not received. Wait for next invocation
+        mq_remove(env, crt_i_process->message_send);
+	mq_enqueue(env, crt_i_process->message_receive);
+      }
+    }
+  } while (env != NULL);
+}
+
+    
+
+
 void signal_handler(int signal) {
   //signal handler considered trusted code
   atomic(1);
@@ -80,6 +121,12 @@ void signal_handler(int signal) {
 
     switch(signal) {
       case SIGINT: terminate(); break;
+      case SIGUSR1: current_process = keyboard_i_process;
+      		    keyboard_service();
+		    break;
+      case SIGUSR2: current_process = crt_i_process;
+      		    crt_service();
+		    break;
       case SIGALRM: current_process = timer_i_process;
                     timer_service();
     		    break;

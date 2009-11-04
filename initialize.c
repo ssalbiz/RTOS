@@ -206,6 +206,8 @@ int main(int argc, char** argv) {
    if (kbd_args == NULL || crt_args == NULL) terminate();
    _kbd_fid = kbd_args->fid;
    _crt_fid = crt_args->fid;
+   ((mem_buffer*)_kbd_mem_ptr)->flag = MEM_DONE;
+   ((mem_buffer*)_crt_mem_ptr)->flag = MEM_DONE;
    char arg1[7], arg2[7], arg3[7];
 
    //parse arguments
@@ -231,6 +233,7 @@ int main(int argc, char** argv) {
      exit(1);
  //    terminate();
    }
+   masked = FALSE;
    sleep(2);
    unmask();
    ticks = 0;

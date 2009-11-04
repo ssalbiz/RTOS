@@ -1,10 +1,15 @@
 #include<signal.h>
 #include<stdio.h>
 #include<stdlib.h>
+#include<sys/mman.h>
+#include "global.h"
 
+int parent_pid, fid, mem_size;
+caddr_t mem_ptr;
 
 
 void die() {
+  munmap(mem_ptr, mem_size);
   printf("KBD: Received SIGINT, quitting..\n");
   exit(1);
 }
@@ -37,7 +42,7 @@ void unmask() {
 void register_handlers() {
   register_handler(SIGINT);
 }
-int parent_pid, fid, mem_size;
+
 
 int main(int argc, char** argv) {
   register_handlers();
@@ -45,8 +50,29 @@ int main(int argc, char** argv) {
   sscanf(argv[1], "%d", &fid);
   sscanf(argv[2], "%d", &mem_size);
   printf("KBD: %d %d %d\n", parent_pid, mem_size, fid);
+  mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,
+  		 MAP_SHARED, fid, (off_t)0);
+  mem_buffer *buffer = (mem_buffer*) mem_ptr;
+  char local_buffer[MEMBLOCK_SIZE];
+  int index = 0;
+  char kbd_in = '\0';
   unmask();
-  while(1) { }
+  while(1) { 
+    kbd_in = getchar();
+    if (kbd_in != '\n' && index < MEMBLOCK_SIZE-1) {
+      local_buffer[index++] = kbd_in;
+    } else {
+      local_buffer[index++] = '\0';
+      while (buffer->flag != MEM_DONE)
+        sleep(1); //1-sec polling
+      strcpy(buffer->data, local_buffer);
+      buffer->flag = MEM_READY;
+      buffer->length = index;
+      index = 0;
+      kill(parent_pid, SIGUSR1);
+    }
+      
+  }
 return 0;
 }
 

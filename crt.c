@@ -1,9 +1,15 @@
 #include<signal.h>
-#include<curses.h>
-#include<stdio.h>
-#include<stdlib.h>
+#include<ncurses.h>
+#include<sys/mman.h>
+#include "global.h"
+#include<string.h>
+
+int parent_pid, fid, mem_size;
+caddr_t mem_ptr;
 
 void die() {
+  munmap(mem_ptr, mem_size);
+//  endwin();			/* End curses mode		  */
   printf("CRT: Received SIGINT, quitting..\n");
   exit(1);
 }
@@ -39,7 +45,6 @@ void register_handlers() {
   register_handler(SIGINT);
 }
 
-int parent_pid, fid, mem_size;
 
 int main(int argc, char** argv) {
   register_handlers();
@@ -48,9 +53,23 @@ int main(int argc, char** argv) {
   sscanf(argv[2], "%d", &mem_size);
   printf("CRT: %d %d %d\n", parent_pid, mem_size, fid);
   unmask();
-
-  
-
-  while(1) { }
+//  initscr();			/* Start curses mode 		  */
+//  printw("Hello World !!!");	/* Print Hello World		  */
+//  refresh();			/* Print it on to the real screen */
+  mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,
+  		 MAP_SHARED, fid, (off_t)0);
+  mem_buffer *buffer = (mem_buffer*) mem_ptr;
+  char local_buffer[MEMBLOCK_SIZE];
+  local_buffer[0] = '\0';
+  unmask();
+  while(1) {
+    while (buffer->flag != MEM_DONE)
+      sleep(1); //1-sec polling
+    strncpy(local_buffer, buffer->data, mem_size); //RTX in charge or null termination
+    buffer->length = 0;
+    buffer->flag = MEM_READY;
+    if (strlen(local_buffer) > 0)
+      printf("%s\n", local_buffer);
+  }
   return 0; 
 }
