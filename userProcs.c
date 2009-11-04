@@ -8,6 +8,10 @@
 void test_process_send() { //pid == 3
   //testing message send
   MessageEnvelope* env = request_message_envelope();
+  get_console_chars(env);
+  env = receive_message();
+  printf("input:_%s_\n", env->data);
+  
   printf("sending message to %d\n", 2);
   request_delay(10, 1, env);
   env = receive_message();

@@ -79,6 +79,7 @@ void keyboard_service(void) {
       if (buffer->flag == MEM_READY) {
         strncpy(env->data, buffer->data, MIN(buffer->length, MESSAGE_SIZE)); //preprocessor hacks
 	buffer->flag = MEM_DONE; //done reading
+	K_send_message(env->sender_pid, env);
       } else {//this should be always true since the keyboard is only going to send the signal when its ready
         //pretend we never received the envelope. Remove from the send queue and re-enqueue to receive
 	mq_remove(env, keyboard_i_process->message_send);
@@ -98,6 +99,7 @@ void crt_service(void) {
       if (buffer->flag == MEM_READY) {
         strncpy(buffer->data, env->data, MIN(buffer->length, MESSAGE_SIZE));
 	buffer->flag = MEM_DONE;
+	K_send_message(env->sender_pid, env);
       } else { //pretend envelope not received. Wait for next invocation
         mq_remove(env, crt_i_process->message_send);
 	mq_enqueue(env, crt_i_process->message_receive);
