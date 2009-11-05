@@ -105,9 +105,16 @@ int K_request_delay(int timeout, int wakeup, MessageEnvelope* env) {
 
 int K_send_console_chars(MessageEnvelope* env) {
   assert(env != NULL);
+  PCB* interrupted = NULL;
   env->type = CONSOLE_OUTPUT;
   K_send_message(crt_i_process->pid, env);
+  //call crt_i_process
+  interrupted     = current_process;
+  current_process = crt_i_process;
+  crt_service();
   //let iprocess write env->data to shared memory
+  //return control
+  current_process = interrupted;
   return 0;
 }
 
