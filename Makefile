@@ -14,10 +14,14 @@ CXXINCS =
 CXXFLAGS = $(CXXINCS)  
 CFLAGS = -I$(INCS) -g -Wall
 RM = rm -f
+DOCS = doxygen
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: myRTX CRT KB 
+all: myRTX CRT KB docs
+
+docs: Doxyfile
+	$(DOCS)
 
 clean: 
 	$(RM) $(OBJ) myRTX CRT KB crt.o keyboard.o
