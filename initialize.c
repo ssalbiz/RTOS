@@ -209,7 +209,6 @@ int main(int argc, char** argv) {
    ((mem_buffer*)_kbd_mem_ptr)->flag = MEM_DONE;
    ((mem_buffer*)_crt_mem_ptr)->flag = MEM_DONE;
    char arg1[7], arg2[7], arg3[7];
-
    //parse arguments
    sprintf(arg1, "%d", kbd_args->parent_pid);
    sprintf(arg2, "%d", kbd_args->fid);
@@ -235,6 +234,9 @@ int main(int argc, char** argv) {
    }
    masked = FALSE;
    sleep(2);
+   initscr(); //start curses mode
+   cbreak();  //dont filter input newlines
+   noecho();
    ticks = 0;
    unmask();
    ualarm(TIMER_INTERVAL, TIMER_INTERVAL);

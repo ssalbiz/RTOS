@@ -9,7 +9,7 @@ caddr_t mem_ptr;
 
 void die() {
   munmap(mem_ptr, mem_size);
-//  endwin();			/* End curses mode		  */
+  endwin();			/* End curses mode		  */
   printf("CRT: Received SIGINT, quitting..\n");
   exit(1);
 }
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
   sscanf(argv[2], "%d", &mem_size);
   printf("CRT: %d %d %d\n", parent_pid, mem_size, fid);
   unmask();
-//  initscr();			/* Start curses mode 		  */
+  			/* Start curses mode 		  */
 //  refresh();			/* Print it on to the real screen */
   mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,
   		 MAP_SHARED, fid, (off_t)0);
@@ -68,8 +68,11 @@ int main(int argc, char** argv) {
     strncpy(local_buffer, buffer->data, mem_size); //RTX in charge or null termination
     buffer->length = 0;
     buffer->flag = MEM_READY;
-    if (strlen(local_buffer) > 0)
-      printf("OUTPUT:%s\n", local_buffer);
+    if (strlen(local_buffer) > 0) {
+      printf("OUTPUT:%s\r\n", local_buffer);
+      refresh();
+    }
+
     kill(parent_pid, SIGUSR2);
   }
   return 0; 

@@ -241,6 +241,7 @@ void K_cleanup() {
   kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
   
+  endwin(); //end curses mode
   int stat = 0;
   if (_kbd_mem_ptr != NULL) {
     printf("RTX: unmapping keyboard share\n");
