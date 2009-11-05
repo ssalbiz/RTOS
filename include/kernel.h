@@ -3,6 +3,7 @@
 #include "queues.h"
 #include "global.h"
 #include "userAPI.h"
+#include "iprocesses.h"
 #include <sys/mman.h>
 
 //kernel data structures
