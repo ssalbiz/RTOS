@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
   unmask();
   while(1) { 
     kbd_in = getchar();
-    if (kbd_in != '\n' && index < MEMBLOCK_SIZE-1) {
+    if (kbd_in != '\r' && index < MEMBLOCK_SIZE-1) {
       local_buffer[index++] = kbd_in;
     } else {
       local_buffer[index++] = '\0';
