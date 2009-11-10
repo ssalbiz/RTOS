@@ -9,6 +9,7 @@ caddr_t mem_ptr;
 
 
 void die() {
+  kill(parent_pid, SIGINT);
   munmap(mem_ptr, mem_size);
   printf("KBD: Received SIGINT, quitting..\n");
   exit(1);

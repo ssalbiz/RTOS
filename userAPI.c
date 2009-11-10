@@ -63,7 +63,7 @@ void release_processor(void) {
   atomic(0);
 }
 
-int get_trace_buffer(MessageEnvelope* env) {\
+int get_trace_buffer(MessageEnvelope* env) {
   atomic(1);
   int i = 0;
   i = K_get_trace_buffer(env);

@@ -13,7 +13,7 @@
 #define TRUE 1
 #define FALSE 0
 #define MESSAGE_SIZE 2048
-#define MEMBLOCK_SIZE 256
+#define MEMBLOCK_SIZE 2048
 #define NUM_PROCESS 3
 #define NUM_UPROCESS 20
 #define MIN_PRIORITY 3

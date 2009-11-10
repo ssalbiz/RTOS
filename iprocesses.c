@@ -59,12 +59,18 @@ void timer_service(void) {
 }
 
 void update_clock() {
+  MessageEnvelope* env = NULL;
+  env = K_request_message_envelope();
   if (++wall_sec >= 60)
     if (++wall_min >= 60) 
       ++wall_hr;
   wall_sec %= 60;
   wall_min %= 60;
   wall_hr  %= 24;
+  if (env != NULL) {
+    sprintf(env->data, "CLOCK:%d:%d:%d\n", wall_hr, wall_min, wall_sec);
+    K_send_console_chars(env);
+  }
 return;
 }
 
@@ -99,7 +105,11 @@ void crt_service(void) {
       if (buffer->flag == MEM_READY) {
         strncpy(buffer->data, env->data, MESSAGE_SIZE);
 	buffer->flag = MEM_DONE;
-	K_send_message(env->sender_pid, env);
+        if (env->sender_pid == timer_i_process->pid) {
+	  K_release_message_envelope(env);
+        } else {
+	  K_send_message(env->sender_pid, env);
+        }
       } else { //pretend envelope not received. Wait for next invocation
         mq_remove(env, crt_i_process->message_send);
 	mq_enqueue(env, crt_i_process->message_receive);

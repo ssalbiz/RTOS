@@ -8,7 +8,7 @@
 void test_process_send() { //pid == 3
   //testing message send
   MessageEnvelope* env = request_message_envelope();
-  strcpy(env->data, "does this work?");
+  strcpy(env->data, "does this work?\n");
   //printf("input:_%s_\n", env->data);
   send_console_chars(env);
   env = receive_message();
@@ -22,7 +22,7 @@ void test_process_send() { //pid == 3
   strcpy(env->data, "does this work?");
   send_message(4, env);
   //printf("send message successful\n");
-  fflush(stdout);
+//  fflush(stdout);
   env = request_message_envelope();
   while (1) {
     send_console_chars(env);
@@ -46,6 +46,7 @@ void test_process_receive() { //pid == 4
   request_process_status(env);
 //  printf("process status:\n%s\n", env->data);
   send_console_chars(env);
+  env = receive_message();
   release_message_envelope(env);
   while (1) release_processor();
 }

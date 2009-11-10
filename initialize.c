@@ -234,9 +234,6 @@ int main(int argc, char** argv) {
    }
    masked = FALSE;
    sleep(2);
-   initscr(); //start curses mode
-   cbreak();  //dont filter input newlines
-   noecho();
    ticks = 0;
    unmask();
    ualarm(TIMER_INTERVAL, TIMER_INTERVAL);
