@@ -48,7 +48,7 @@ void register_handlers() {
 
 
 int main(int argc, char** argv) {
-  int x, y;
+  int x, y, row, col;
   char *tmp;
   tr_out = fopen("trace.out", "w");
   register_handlers();
@@ -60,7 +60,8 @@ int main(int argc, char** argv) {
   noecho();
   cbreak();
   scrollok(stdscr, TRUE);
-  idlok(stdscr, TRUE); 
+  idlok(stdscr, TRUE);
+  getmaxyx(stdscr,row,col);
   printw("CRT: %d %d %d\n", parent_pid, mem_size, fid);
   refresh();			/* Print it on to the real screen */
 
@@ -81,7 +82,7 @@ int main(int argc, char** argv) {
     while (tmp != NULL) {
       if (strlen(tmp) > 0) {
         if (strstr(tmp, "CLOCK") != NULL) {
-          mvprintw(0, 0, "%s\n\r", tmp);
+          mvprintw(0, col-strlen(tmp)-1, "%s\n\r", tmp);
           move(y, 0);
         } else {
           printw("$:%s\n\r", tmp);

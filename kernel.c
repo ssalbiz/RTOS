@@ -63,7 +63,7 @@ PCB* pid_to_PCB(int target) {
 int K_request_process_status(MessageEnvelope* msg) {
   PCB* next = pq_peek(_process_list);
   char tmp_buf[20];
-  strcpy(msg->data, "");
+  strcpy(msg->data, "PROCESS STATUS\nPID, STATE, PRIORITY\n");
   while (next != NULL) {
     sprintf(tmp_buf, "%d,%d,%d\n", next->pid, 
     				   next->state, 
