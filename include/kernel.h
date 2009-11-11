@@ -25,7 +25,7 @@ PCB* interrupted_process;
 jmp_buf kernel_buf;
 int ticks, seconds;//absolute time since RTX start
 
-int wall_hr, wall_min, wall_sec;
+int wall_hr, wall_min, wall_sec, wall_state;
 
 void K_terminate() ;
 void K_context_switch(jmp_buf prev, jmp_buf next) ;
@@ -47,5 +47,6 @@ int K_request_delay(int timeout, int wakeup, MessageEnvelope* env);
 int K_get_console_chars(MessageEnvelope* env);
 int K_send_console_chars(MessageEnvelope* env);
 void K_set_wall_clock(int h, int m, int s);
+void K_set_wall_clock_state(int s);
 
 #endif

@@ -60,14 +60,15 @@ void timer_service(void) {
 
 void update_clock() {
   MessageEnvelope* env = NULL;
-  env = K_request_message_envelope();
+  if (wall_state)
+    env = K_request_message_envelope();
   if (++wall_sec >= 60)
     if (++wall_min >= 60) 
       ++wall_hr;
   wall_sec %= 60;
   wall_min %= 60;
   wall_hr  %= 24;
-  if (env != NULL) {
+  if (wall_state && env != NULL) {
     sprintf(env->data, "CLOCK:%2d:%2d:%2d\n", wall_hr, wall_min, wall_sec);
     K_send_console_chars(env);
   }

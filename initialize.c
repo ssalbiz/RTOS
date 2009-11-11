@@ -179,7 +179,7 @@ init_table* create_init_table(int pid, int priority, int stack, void* process_co
 void read_initialization_table() {
   int i = 0;
   int pid, pri, stk;
-  void* process_code[] = {(void*)null_process, (void*)test_process_send, (void*)test_process_receive}; //hard code preloaded processes
+  void* process_code[] = {(void*)null_process, (void*)CCI, (void*)test_process_send, (void*)test_process_receive}; //hard code preloaded processes
   FILE* fconf = fopen("init_table", "r");
   assert (fconf != NULL);
   for (; i < NUM_PROCESS; i++) {
@@ -235,6 +235,7 @@ int main(int argc, char** argv) {
    masked = FALSE;
    sleep(2);
    ticks = 0;
+   wall_state = 0;
    unmask();
    ualarm(TIMER_INTERVAL, TIMER_INTERVAL);
    dispatch();

@@ -46,6 +46,13 @@ void K_set_wall_clock(int hrs, int min, int sec) {
   wall_sec = sec % 60;
 }
 
+void K_set_wall_clock_state(int state) {
+  if (state) 
+    wall_state = 1;
+  else
+    wall_state = 0;
+}
+
 
 PCB* pid_to_PCB(int target) {
   //re-implement with pid array/hashtable. O(n) lookup is terrible
@@ -129,6 +136,7 @@ int K_get_console_chars(MessageEnvelope* env) {
 MessageEnvelope* K_request_message_envelope(void) {
   MessageEnvelope *env = NULL;
   while (mq_is_empty(_feq)) {
+    if (current_process == timer_i_process) return NULL;
     current_process->state = ENVELOPE_WAIT;
     ppq_enqueue(current_process, _ewq);
     K_process_switch();
