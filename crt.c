@@ -85,14 +85,16 @@ int main(int argc, char** argv) {
           mvprintw(0, col-strlen(tmp)-1, "%s\n\r", tmp);
           move(y, 0);
         } else {
-          printw("$:%s\n\r", tmp);
+          printw("$: %s", tmp);
           fprintf(tr_out, "$:%s\n\r", tmp);
           //move(y, 0);
         }
         refresh();
       }
       tmp = strtok(NULL, "\n");
-    }
+      if (tmp != NULL) 
+        printw("\n\r");
+    } 
 
     kill(parent_pid, SIGUSR2);
   }

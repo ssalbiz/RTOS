@@ -61,19 +61,25 @@ int main(int argc, char** argv) {
   while(1) { 
     kbd_in = getchar();
     //echo back
-    if (kbd_in != '\r' && index < MEMBLOCK_SIZE-1) {
+    if (index < MEMBLOCK_SIZE-1) {
       local_buffer[index++] = kbd_in;
-    } else {
       local_buffer[index++] = '\0';
+      if (buffer->flag == MEM_DONE) {
+        strcpy(buffer->data, local_buffer);
+        buffer->flag = MEM_READY;
+        buffer->length = index;
+        index = 0;
+        kill(parent_pid, SIGUSR1);
+      }
+    } else {
       while (buffer->flag != MEM_DONE)
-        sleep(1); //1-sec polling
+        sleep(1);
       strcpy(buffer->data, local_buffer);
       buffer->flag = MEM_READY;
       buffer->length = index;
       index = 0;
       kill(parent_pid, SIGUSR1);
     }
-      
   }
 return 0;
 }

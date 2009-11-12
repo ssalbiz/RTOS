@@ -74,27 +74,38 @@ void CCI() { //top priority, pid = 3
   do {
     get_console_chars(tmp);
     tmp = receive_message(); // possible block on receive
-    strcpy(u_input, tmp->data);
-    
+    strcat(u_input, tmp->data);
+    if (strchr(u_input, '\r') == NULL) {
+      send_console_chars(tmp);
+      tmp = receive_message();
+      continue;
+    } else {
+      u_input[strlen(u_input)-1] = '\0';
+    }
     if (strcmp(u_input, "s") == 0) {
       send_console_chars(tmp);
       tmp = receive_message();
+      strcpy(u_input, "");
     } else if (strcmp(u_input, "ps") == 0) {
       request_process_status(tmp);
       send_console_chars(tmp);
       tmp = receive_message();
+      strcpy(u_input, "");
     } else if (strcmp(u_input, "cd") == 0) {
       send_console_chars(tmp);
       set_wall_clock_state(1);
       tmp = receive_message();
+      strcpy(u_input, "");
     } else if (strcmp(u_input, "ct") == 0) {
       send_console_chars(tmp);
       set_wall_clock_state(0);
       tmp = receive_message();
+      strcpy(u_input, "");
     } else if (strcmp(u_input, "b") == 0) {
       get_trace_buffer(tmp);
       send_console_chars(tmp);
       tmp = receive_message();
+      strcpy(u_input, "");
     } else if (strcmp(u_input, "t") == 0) {
       terminate();
     } else if (u_input[0] == 'n') {
@@ -112,10 +123,12 @@ void CCI() { //top priority, pid = 3
       } else {
         set_wall_clock(tmp1, tmp2, tmp3);
       }
+      strcpy(u_input, "");
     } else {
       strcat(tmp->data, ": ERROR, bad command\n");
       send_console_chars(tmp);
       tmp = receive_message();
+      strcpy(u_input, "");
     }
   } while (1);
 }
