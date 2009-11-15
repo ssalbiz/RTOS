@@ -5,6 +5,7 @@
 #include "userAPI.h"
 #include "iprocesses.h"
 #include <sys/mman.h>
+#include <sys/wait.h>
 
 //kernel data structures
 PCB* current_process;

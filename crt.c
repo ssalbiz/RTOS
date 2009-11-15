@@ -7,8 +7,12 @@
 int parent_pid, fid, mem_size;
 caddr_t mem_ptr;
 FILE *tr_out;
+WINDOW* crt_win;
+
 void die() {
+  kill(parent_pid, SIGINT);
   munmap(mem_ptr, mem_size);
+  delwin(crt_win);
   endwin();			/* End curses mode		  */
   fclose(tr_out);
   printf("CRT: Received SIGINT, quitting..\n");
@@ -44,6 +48,7 @@ void unmask() {
 
 void register_handlers() {
   register_handler(SIGINT);
+  register_handler(SIGHUP);
 }
 
 
@@ -59,10 +64,11 @@ int main(int argc, char** argv) {
   initscr(); 			/* Start curses mode 		  */
   noecho();
   cbreak();
-  scrollok(stdscr, TRUE);
-  idlok(stdscr, TRUE);
   getmaxyx(stdscr,row,col);
-  printw("CRT: %d %d %d\n", parent_pid, mem_size, fid);
+  crt_win = derwin(stdscr, 20, 0, LINES-10, 0);
+  scrollok(crt_win, TRUE);
+  idlok(crt_win, TRUE);
+  wprintw(crt_win, "CRT: %d %d %d\n", parent_pid, mem_size, fid);
   refresh();			/* Print it on to the real screen */
 
   mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,
@@ -78,21 +84,23 @@ int main(int argc, char** argv) {
     tmp = strtok(local_buffer, "\n");
     buffer->length = 0;
     buffer->flag = MEM_READY;
+    wrefresh(crt_win);
     getyx(stdscr, y, x);
     while (tmp != NULL) {
       if (strlen(tmp) > 0) {
         if (strstr(tmp, "CLOCK") != NULL) {
-          mvprintw(0, col-strlen(tmp)-1, "%s\n\r", tmp);
-          move(y, 0);
+          mvwprintw(crt_win, 0, col-strlen(tmp)-1, "%s\n\r", tmp);
+	  move(y, x);
         } else {
-          printw("$:%s\n\r", tmp);
+          wprintw(crt_win, "$:%s\n\r", tmp);
           fprintf(tr_out, "$:%s\n\r", tmp);
           //move(y, 0);
         }
-        refresh();
+        wrefresh(crt_win);
       }
       tmp = strtok(NULL, "\n");
     }
+    wrefresh(crt_win);
 
     kill(parent_pid, SIGUSR2);
   }

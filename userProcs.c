@@ -113,7 +113,7 @@ void CCI() { //top priority, pid = 3
         set_wall_clock(tmp1, tmp2, tmp3);
       }
     } else {
-      strcat(tmp->data, ": ERROR, bad command\n");
+      strcat(tmp->data, " ERROR, bad command\n");
       send_console_chars(tmp);
       tmp = receive_message();
     }

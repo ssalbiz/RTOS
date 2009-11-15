@@ -246,9 +246,11 @@ void K_cleanup() {
   printf("RTX: sending signal\n");
 #endif
   sleep(2);
-  kill(_kbd_pid, SIGINT);
   kill(_crt_pid, SIGINT);
-  
+  wait(NULL);
+  kill(_kbd_pid, SIGINT);
+  wait(NULL);
+
   int stat = 0;
   if (_kbd_mem_ptr != NULL) {
     printf("RTX: unmapping keyboard share\n");

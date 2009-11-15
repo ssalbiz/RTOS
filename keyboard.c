@@ -6,11 +6,15 @@
 
 int parent_pid, fid, mem_size;
 caddr_t mem_ptr;
+WINDOW* kbd_win;
+
 
 
 void die() {
   kill(parent_pid, SIGINT);
   munmap(mem_ptr, mem_size);
+  delwin(kbd_win);
+  endwin();
   printf("KBD: Received SIGINT, quitting..\n");
   exit(1);
 }
@@ -42,10 +46,12 @@ void unmask() {
 
 void register_handlers() {
   register_handler(SIGINT);
+  register_handler(SIGHUP);
 }
 
 
 int main(int argc, char** argv) {
+  int row, col, x, y;
   register_handlers();
   sscanf(argv[0], "%d", &parent_pid);
   sscanf(argv[1], "%d", &fid);
@@ -57,13 +63,28 @@ int main(int argc, char** argv) {
   char local_buffer[MEMBLOCK_SIZE];
   int index = 0;
   char kbd_in = '\0';
+  initscr();
+  noecho();
+  cbreak();
+  getmaxyx(stdscr, row, col);
+  kbd_win = derwin(stdscr, 0, 0, LINES-3, 0);
+  idlok(kbd_win, TRUE);
+  scrollok(kbd_win, TRUE);
+  wrefresh(kbd_win);
   unmask();
-  while(1) { 
-    kbd_in = getchar();
+  while(1) {
+    wrefresh(kbd_win);
+    kbd_in = wgetch(kbd_win);
+    wprintw(kbd_win, "%c", kbd_in);
+    wrefresh(kbd_win);
     //echo back
-    if (kbd_in != '\r' && index < MEMBLOCK_SIZE-1) {
+    if (kbd_in != '\n' && index < MEMBLOCK_SIZE-2) { //need space for null terminator and array offset
       local_buffer[index++] = kbd_in;
     } else {
+      printw("%s\n", local_buffer);
+      wrefresh(kbd_win);
+      if (kbd_in == '\n' && index < MEMBLOCK_SIZE-3) //newline, null terminator and array offset
+        local_buffer[index++] = kbd_in;
       local_buffer[index++] = '\0';
       while (buffer->flag != MEM_DONE)
         sleep(1); //1-sec polling
@@ -73,7 +94,6 @@ int main(int argc, char** argv) {
       index = 0;
       kill(parent_pid, SIGUSR1);
     }
-      
   }
 return 0;
 }
