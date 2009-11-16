@@ -31,7 +31,7 @@ clean-obj:
 	cd test_cases && $(MAKE) clean-obj
 
 myRTX: $(OBJ)
-	$(CC) $(LINKOBJ) -o "myRTX" $(LIBS) -lrt
+	$(CC) $(LINKOBJ) -o "myRTX" $(LIBS) -lrt -g
 
 CRT: crt.o
 	$(CC) $<  -o $@ -lrt $(LIBS)

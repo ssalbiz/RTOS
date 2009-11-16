@@ -214,6 +214,9 @@ int main(int argc, char** argv) {
    sprintf(arg2, "%d", kbd_args->fid);
    sprintf(arg3, "%d", kbd_args->mem_size);
    free(kbd_args);
+   initscr();
+   noecho();
+   cbreak();
    _kbd_pid = fork();
    if (_kbd_pid == 0) {
      mask();

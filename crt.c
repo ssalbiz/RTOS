@@ -61,15 +61,17 @@ int main(int argc, char** argv) {
   sscanf(argv[1], "%d", &fid);
   sscanf(argv[2], "%d", &mem_size);
   unmask();
-  initscr(); 			/* Start curses mode 		  */
-  noecho();
-  cbreak();
+//  initscr(); 			/* Start curses mode 		  */
+//  scrollok(stdscr, TRUE);
+//  idlok(stdscr, TRUE);
+//  noecho();
+//  cbreak();
   getmaxyx(stdscr,row,col);
-  crt_win = derwin(stdscr, 20, 0, LINES-10, 0);
+  crt_win = derwin(stdscr, LINES-10, 0, 0, 0);
   scrollok(crt_win, TRUE);
   idlok(crt_win, TRUE);
-  wprintw(crt_win, "CRT: %d %d %d\n", parent_pid, mem_size, fid);
-  refresh();			/* Print it on to the real screen */
+  wprintw(crt_win, "CRT: %d %d %d\n\r", parent_pid, mem_size, fid);
+  wrefresh(crt_win);			/* Print it on to the real screen */
 
   mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,
   		 MAP_SHARED, fid, (off_t)0);
@@ -81,27 +83,27 @@ int main(int argc, char** argv) {
     while (buffer->flag != MEM_DONE) {
     }
     strncpy(local_buffer, buffer->data, mem_size); //RTX in charge or null termination
+    buffer->data[0] = '\0';
     tmp = strtok(local_buffer, "\n");
     buffer->length = 0;
     buffer->flag = MEM_READY;
-    wrefresh(crt_win);
     getyx(stdscr, y, x);
+    fprintf(tr_out, "$:%d %d\n", y, x);
     while (tmp != NULL) {
       if (strlen(tmp) > 0) {
         if (strstr(tmp, "CLOCK") != NULL) {
           mvwprintw(crt_win, 0, col-strlen(tmp)-1, "%s\n\r", tmp);
-	  move(y, x);
+	  wmove(crt_win, ++y, x);
         } else {
-          wprintw(crt_win, "$:%s\n\r", tmp);
-          fprintf(tr_out, "$:%s\n\r", tmp);
+          wprintw(crt_win, "%s\n\r", tmp);
+          fprintf(tr_out, "%s\n", tmp);
+	  move(++y, x);
           //move(y, 0);
         }
-        wrefresh(crt_win);
       }
       tmp = strtok(NULL, "\n");
     }
     wrefresh(crt_win);
-
     kill(parent_pid, SIGUSR2);
   }
   return 0; 

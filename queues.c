@@ -299,7 +299,8 @@ PCB* pq_remove(PCB* target, process_queue* pq) {
 }
 
 MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
-  assert(target != NULL && mq != NULL);
+  assert(target != NULL);
+  assert(mq != NULL);
   MessageEnvelope* next = mq->head;
   if (mq_is_empty(mq)) return NULL;
   if (target == mq->head) {

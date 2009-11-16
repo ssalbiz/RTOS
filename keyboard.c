@@ -13,7 +13,7 @@ WINDOW* kbd_win;
 void die() {
   kill(parent_pid, SIGINT);
   munmap(mem_ptr, mem_size);
-  delwin(kbd_win);
+//  delwin(kbd_win);
   endwin();
   printf("KBD: Received SIGINT, quitting..\n");
   exit(1);
@@ -56,38 +56,44 @@ int main(int argc, char** argv) {
   sscanf(argv[0], "%d", &parent_pid);
   sscanf(argv[1], "%d", &fid);
   sscanf(argv[2], "%d", &mem_size);
-  printf("KBD: %d %d %d\n", parent_pid, mem_size, fid);
   mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,
   		 MAP_SHARED, fid, (off_t)0);
   mem_buffer *buffer = (mem_buffer*) mem_ptr;
   char local_buffer[MEMBLOCK_SIZE];
   int index = 0;
   char kbd_in = '\0';
-  initscr();
-  noecho();
-  cbreak();
+//  initscr();
+  //noecho();
+//  cbreak();
   getmaxyx(stdscr, row, col);
-  kbd_win = derwin(stdscr, 0, 0, LINES-3, 0);
+  getyx(stdscr, y, x);
+  kbd_win = derwin(stdscr, 0, 0, LINES-1, 0);
   idlok(kbd_win, TRUE);
   scrollok(kbd_win, TRUE);
-  wrefresh(kbd_win);
+  leaveok(kbd_win, TRUE);
+//  wprintw(kbd_win, "KBD: %d %d %d\n", parent_pid, mem_size, fid);
+//  wprintw(kbd_win, "$:");
+//  wrefresh(kbd_win);
   unmask();
+
   while(1) {
-    wrefresh(kbd_win);
+//    kbd_in = getchar();
+//    wrefresh(kbd_win);
     kbd_in = wgetch(kbd_win);
-    wprintw(kbd_win, "%c", kbd_in);
-    wrefresh(kbd_win);
+//    refresh();
+ //   wprintw(kbd_win, "%c", kbd_in);
+//    wrefresh(kbd_win);
     //echo back
     if (kbd_in != '\n' && index < MEMBLOCK_SIZE-2) { //need space for null terminator and array offset
       local_buffer[index++] = kbd_in;
     } else {
-      printw("%s\n", local_buffer);
-      wrefresh(kbd_win);
-      if (kbd_in == '\n' && index < MEMBLOCK_SIZE-3) //newline, null terminator and array offset
+  //    wprintw(kbd_win, "\n$:");
+  //    wrefresh(kbd_win);
+      if (kbd_in != '\n' && index < MEMBLOCK_SIZE-3) //newline, null terminator and array offset
         local_buffer[index++] = kbd_in;
       local_buffer[index++] = '\0';
-      while (buffer->flag != MEM_DONE)
-        sleep(1); //1-sec polling
+      while (buffer->flag != MEM_DONE);
+      //  sleep(1); //1-sec polling
       strcpy(buffer->data, local_buffer);
       buffer->flag = MEM_READY;
       buffer->length = index;
