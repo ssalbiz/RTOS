@@ -6,6 +6,12 @@ void set_wall_clock(int hrs, int min, int sec) {
   atomic(0);
 }
 
+void set_wall_clock_state(int state) {
+  atomic(1);
+  K_set_wall_clock_state(state);
+  atomic(0);
+}
+
 int atomic(int state) { 
   sigset_t newmask;
   if (state && masked != TRUE) {
@@ -63,7 +69,7 @@ void release_processor(void) {
   atomic(0);
 }
 
-int get_trace_buffer(MessageEnvelope* env) {\
+int get_trace_buffer(MessageEnvelope* env) {
   atomic(1);
   int i = 0;
   i = K_get_trace_buffer(env);

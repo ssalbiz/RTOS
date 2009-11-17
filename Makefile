@@ -7,7 +7,7 @@ MAKE = make
 RES  = 
 OBJ  = set.o  userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o startkbcrtc.o $(RES)
 LINKOBJ  = userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o startkbcrtc.o set.o $(RES)
-LIBS =   
+LIBS =  -lcurses 
 INCS = include/
 CXXINCS = 
 
@@ -34,10 +34,10 @@ myRTX: $(OBJ)
 	$(CC) $(LINKOBJ) -o "myRTX" $(LIBS) -lrt
 
 CRT: crt.o
-	$(CC) $<  -o $@ -lrt
+	$(CC) $<  -o $@ -lrt $(LIBS)
 
 KB: keyboard.o
-	$(CC) $<  -o $@ -lrt
+	$(CC) $<  -o $@ -lrt $(LIBS)
 
 userProcs.o: userProcs.c
 	$(CC) -c  $< -o $@ $(CFLAGS)

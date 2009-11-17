@@ -19,6 +19,7 @@ int request_delay(int time_delay,  int wakeup_code, MessageEnvelope* env);
 int send_console_chars(MessageEnvelope* env);
 int get_console_chars(MessageEnvelope* env);
 void set_wall_clock(int h, int m, int s);
+void set_wall_clock_state(int s);
 #endif
 
 

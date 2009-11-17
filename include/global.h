@@ -8,10 +8,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#include <ncurses.h>
 #define DEBUG 1
+#define TRUE 1
+#define FALSE 0
 #define MESSAGE_SIZE 2048
-#define MEMBLOCK_SIZE 256
-#define NUM_PROCESS 3
+#define MEMBLOCK_SIZE 2048
+#define NUM_PROCESS 4
 #define NUM_UPROCESS 20
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0
@@ -28,6 +31,7 @@
 #ifdef __sparc
 #define STK_OFFSET 4 //sparc dword??
 #endif
+#define MIN(X, Y)  ((X) < (Y) ? (X) : (Y))
 
 #define KEYBOARD_FILE "kbd_mem"
 #define CRT_FILE "crt_mem"
@@ -52,16 +56,17 @@ enum Event {
   RECEIVE=1
 };
 
-enum bool { 
-  FALSE=0,
-  TRUE=1
-};
 
 enum msg_type {
   WAKEUP,
   CONSOLE_OUTPUT,
   CONSOLE_INPUT,
   DEFAULT, //for user processes that do not explicitly set a type
+};
+
+enum shm_flag {
+  MEM_READY=0,
+  MEM_DONE=1
 };
   
 
@@ -73,12 +78,6 @@ typedef struct MessageEnvelope {
   int timeout_ticks;
   enum msg_type type;
 } MessageEnvelope;
-
-typedef struct shared_mem_block {
-  enum bool status;
-  int size;
-  char data[MEMBLOCK_SIZE];
-} shared_mem_block;
 
 typedef struct message_queue {
   MessageEnvelope* head;
@@ -99,7 +98,7 @@ typedef struct PCB {
   jmp_buf context;
   message_queue* message_send; //send message queue
   message_queue* message_receive; // receiving message queue
-  enum bool i_process; //is this an i_process? PCB
+  //enum bool i_process; //is this an i_process? PCB
 
 } PCB;
 
@@ -127,6 +126,12 @@ typedef struct trace_buffer {
   msg_event* receive, *receive_tail;
 } trace_buffer;
 
+typedef struct mem_buffer {
+  int length;
+  enum shm_flag flag;
+  char data[MEMBLOCK_SIZE];
+} mem_buffer;
+
 
 //helper process data structures
 caddr_t _kbd_mem_ptr, _crt_mem_ptr;
@@ -134,7 +139,7 @@ int _kbd_pid, _crt_pid;
 int _kbd_fid, _crt_fid;
 
 //signal masking
-enum bool masked;
+int masked;
 sigset_t rtxmask;
 
 #endif

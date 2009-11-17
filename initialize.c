@@ -179,7 +179,7 @@ init_table* create_init_table(int pid, int priority, int stack, void* process_co
 void read_initialization_table() {
   int i = 0;
   int pid, pri, stk;
-  void* process_code[] = {(void*)null_process, (void*)test_process_send, (void*)test_process_receive}; //hard code preloaded processes
+  void* process_code[] = {(void*)null_process, (void*)CCI, (void*)test_process_send, (void*)test_process_receive}; //hard code preloaded processes
   FILE* fconf = fopen("init_table", "r");
   assert (fconf != NULL);
   for (; i < NUM_PROCESS; i++) {
@@ -206,8 +206,9 @@ int main(int argc, char** argv) {
    if (kbd_args == NULL || crt_args == NULL) terminate();
    _kbd_fid = kbd_args->fid;
    _crt_fid = crt_args->fid;
+   ((mem_buffer*)_kbd_mem_ptr)->flag = MEM_DONE;
+   ((mem_buffer*)_crt_mem_ptr)->flag = MEM_DONE;
    char arg1[7], arg2[7], arg3[7];
-
    //parse arguments
    sprintf(arg1, "%d", kbd_args->parent_pid);
    sprintf(arg2, "%d", kbd_args->fid);
@@ -231,9 +232,11 @@ int main(int argc, char** argv) {
      exit(1);
  //    terminate();
    }
+   masked = FALSE;
    sleep(2);
-   unmask();
    ticks = 0;
+   wall_state = 0;
+   unmask();
    ualarm(TIMER_INTERVAL, TIMER_INTERVAL);
    dispatch();
    printf("Quitting from kernel...(this means you fucked up)\n");

@@ -46,6 +46,13 @@ void K_set_wall_clock(int hrs, int min, int sec) {
   wall_sec = sec % 60;
 }
 
+void K_set_wall_clock_state(int state) {
+  if (state) 
+    wall_state = 1;
+  else
+    wall_state = 0;
+}
+
 
 PCB* pid_to_PCB(int target) {
   //re-implement with pid array/hashtable. O(n) lookup is terrible
@@ -63,7 +70,7 @@ PCB* pid_to_PCB(int target) {
 int K_request_process_status(MessageEnvelope* msg) {
   PCB* next = pq_peek(_process_list);
   char tmp_buf[20];
-  strcpy(msg->data, "");
+  strcpy(msg->data, "PROCESS STATUS\nPID, STATE, PRIORITY\n");
   while (next != NULL) {
     sprintf(tmp_buf, "%d,%d,%d\n", next->pid, 
     				   next->state, 
@@ -104,18 +111,32 @@ int K_request_delay(int timeout, int wakeup, MessageEnvelope* env) {
 }
 
 int K_send_console_chars(MessageEnvelope* env) {
-  //write env->data to shared memory
+  assert(env != NULL);
+  PCB* interrupted = NULL;
+  env->type = CONSOLE_OUTPUT;
+  K_send_message(crt_i_process->pid, env);
+  //call crt_i_process
+  interrupted     = current_process;
+  current_process = crt_i_process;
+  crt_service();
+  //let iprocess write env->data to shared memory
+  //return control
+  current_process = interrupted;
   return 0;
 }
 
 int K_get_console_chars(MessageEnvelope* env) {
   //read from shared memory into env
+  assert(env != NULL);
+  env->type = CONSOLE_INPUT;
+  K_send_message(keyboard_i_process->pid, env);
   return 0;
 }
 
 MessageEnvelope* K_request_message_envelope(void) {
   MessageEnvelope *env = NULL;
   while (mq_is_empty(_feq)) {
+    if (current_process == timer_i_process) return NULL;
     current_process->state = ENVELOPE_WAIT;
     ppq_enqueue(current_process, _ewq);
     K_process_switch();
@@ -214,7 +235,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
     strcat(env->data, tmp_buf);
     evts = evts->next;
   }
-  free(evts);
+  //free(evts);
   return 0;
 }
 
