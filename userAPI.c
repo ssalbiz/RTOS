@@ -100,9 +100,9 @@ return 0;
 
 int change_priority(int new_priority, int target_pid) {
   atomic(1);
-  K_change_priority(new_priority, target_pid);
+  int ret = K_change_priority(new_priority, target_pid);
   atomic(0);
-return 0;
+return ret;
 }
 
 int u_sleep(int timeout, MessageEnvelope* msg) {

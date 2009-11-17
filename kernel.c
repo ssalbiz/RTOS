@@ -84,6 +84,9 @@ int K_request_process_status(MessageEnvelope* msg) {
 
 int K_change_priority(int new_priority, int target_pid) {
   PCB* target = pid_to_PCB(target_pid);
+  if (new_priority <= MAX_PRIORITY || new_priority > MIN_PRIORITY) { //max priority reserved, less is neg
+    return -1;
+  }
   if (target == current_process) {
     target->priority = new_priority;
     return 0;
@@ -93,9 +96,9 @@ int K_change_priority(int new_priority, int target_pid) {
     return -1; //Illegal operation!
   } else {
     switch(target->state) {
-      case READY: ppq_remove(target, _rpq); ppq_enqueue(target, _rpq); break;
-      case MESSAGE_WAIT: ppq_remove(target, _mwq); ppq_enqueue(target, _mwq); break;
-      case ENVELOPE_WAIT: ppq_remove(target, _ewq); ppq_enqueue(target, _ewq); break;
+      case READY: ppq_remove(target, _rpq); target->priority = new_priority; ppq_enqueue(target, _rpq); break;
+      case MESSAGE_WAIT: ppq_remove(target, _mwq); target->priority = new_priority; ppq_enqueue(target, _mwq); break;
+      case ENVELOPE_WAIT: ppq_remove(target, _ewq); target->priority = new_priority; ppq_enqueue(target, _ewq); break;
       default: break;
     }
   }

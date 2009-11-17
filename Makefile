@@ -18,7 +18,7 @@ DOCS = doxygen
 
 .PHONY: all all-before all-after clean clean-custom
 
-all: myRTX CRT KB docs
+all: myRTX CRT KB 
 
 docs: Doxyfile
 	$(DOCS)

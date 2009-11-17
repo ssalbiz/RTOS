@@ -102,7 +102,10 @@ void CCI() { //top priority, pid = 3
         send_console_chars(tmp);
         tmp = receive_message();
       } else {
-        change_priority(tmp1, tmp2);
+        int ret = change_priority(tmp1, tmp2);
+        sprintf(tmp->data, "%d\n", ret);
+        send_console_chars(tmp);
+        tmp = receive_message();
       }
     } else if (u_input[0] == 'c') {
       tmp1 = 0; tmp2 = 0; tmp3 = 0;
