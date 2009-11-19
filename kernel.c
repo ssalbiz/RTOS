@@ -69,18 +69,18 @@ PCB* pid_to_PCB(int target) {
 
 int K_request_process_status(MessageEnvelope* msg) {
   PCB* next = pq_peek(_process_list);
-  char tmp_buf[20], state_msg[20], priority_msg[20];
-  strcpy(msg->data, "PROCESS STATUS\nPID, STATE, PRIORITY\n");
+  char tmp_buf[35], state_msg[20], priority_msg[20];
+  sprintf(msg->data, " PROCESS STATUS\n%5s %15s %10s\n--------------------------------\n", "PID", "STATE", "PRIORITY");
   while (next != NULL) {
     switch(next->state) {
       case EXECUTING	: strcpy(state_msg, "EXECUTING"); break;
       case READY	: strcpy(state_msg, "READY"); break;
-      case MESSAGE_WAIT	:strcpy(state_msg, "MESSAGE_WAIT"); break;
-      case ENVELOPE_WAIT:strcpy(state_msg, "ENVELOPE_WAIT"); break;
+      case MESSAGE_WAIT	: strcpy(state_msg, "MESSAGE_WAIT"); break;
+      case ENVELOPE_WAIT: strcpy(state_msg, "ENVELOPE_WAIT"); break;
       case INTERRUPTED	: strcpy(state_msg, "INTERRUPTED"); break;
       default: sprintf(state_msg, "%d", next->state);
     }
-    sprintf(tmp_buf, "%d,%s,%d\n", next->pid, 
+    sprintf(tmp_buf, "%5d\t%15s%10d\n", next->pid, 
     				   state_msg, 
 				   next->priority);
     strcat(msg->data, tmp_buf);
@@ -235,7 +235,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
       case DEFAULT: strcpy(msg_type, "DEFAULT IPC"); break;
       default: sprintf(msg_type, "%d", evts->mtype); break;
     }
-    sprintf(tmp_buf, "SENT:\tTO: %d,\tFR: %d,\tTIME: %d,\tTYPE: %s\n", 
+    sprintf(tmp_buf, "SENT:\tTO: %d,\tFR: %d,\tTIME: %d,\tTYPE: %20s\n", 
     		evts->destination_pid, 
 		evts->source_pid,
 		evts->timestamp,
@@ -253,7 +253,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
       case DEFAULT: strcpy(msg_type, "DEFAULT IPC"); break;
       default: sprintf(msg_type, "%d", evts->mtype); break;
     }
-    sprintf(tmp_buf, "RCVD:\tFR: %d,\tTO: %d,\tTIME: %d,\tTYPE: %s\n", 
+    sprintf(tmp_buf, "RCVD:\tFR: %d,\tTO: %d,\tTIME: %d,\tTYPE: %20s\n", 
     		evts->source_pid, 
 		evts->destination_pid,
 		evts->timestamp,
