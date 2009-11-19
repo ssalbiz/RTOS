@@ -64,6 +64,7 @@ int main(int argc, char** argv) {
   unmask();
   while(1) { 
     kbd_in = getchar();
+    putc(kbd_in, stdout);
     //echo back
     if (kbd_in != '\r' && index < MEMBLOCK_SIZE-1) {
       local_buffer[index++] = kbd_in;

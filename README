@@ -1,4 +1,4 @@
-README!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+README
 ======
 
 To build the RTX, extract the tarball, cd to the RTOS directory and run:
@@ -8,13 +8,11 @@ To build the RTX, extract the tarball, cd to the RTOS directory and run:
 This will produce three executable binaries, 'myRTX', 'KB' and 'CRT', which correspond to the RTX system, the UNIX keyboard helper and UNIX CRT helper systems respectively.
 To run the RTX, run:
 
-'./myRTX'a
+'./myRTX'
 
 To run the automated unit tests bundled with the source, run:
 
 'make tests'
 
 As of 10/24/09, the automated unit tests consist of queue interface tests and a valgrind memcheck run.
-
-added simple changeasd
 
