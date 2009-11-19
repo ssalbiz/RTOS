@@ -20,6 +20,7 @@ void test_process_send() { //pid == 4
   request_delay(10, 1, env);
   env = receive_message();
   strcpy(env->data, "does this work?");
+  env->type = DEFAULT;
   send_message(4, env);
   //printf("send message successful\n");
 //  fflush(stdout);
@@ -73,16 +74,16 @@ void CCI() { //top priority, pid = 3
   head = head->next;
   do {
     get_console_chars(tmp);
-    tmp = receive_message(); // possible block on receive
+    tmp = receive_message(); //possible block on receive
     strcpy(u_input, tmp->data);
-    
+     
     if (strcmp(u_input, "s") == 0) {
       send_console_chars(tmp);
       tmp = receive_message();
     } else if (strcmp(u_input, "ps") == 0) {
       request_process_status(tmp);
       send_console_chars(tmp);
-      tmp = receive_message();
+      tmp = receive_message(); //echoback block
     } else if (strcmp(u_input, "cd") == 0) {
       send_console_chars(tmp);
       set_wall_clock_state(1);
@@ -96,6 +97,8 @@ void CCI() { //top priority, pid = 3
       send_console_chars(tmp);
       tmp = receive_message();
     } else if (strcmp(u_input, "t") == 0) {
+      strcpy(tmp->data, "Terminating...\n");
+      send_console_chars(tmp);
       terminate();
     } else if (u_input[0] == 'n') {
       if (sscanf(u_input, "%c %d %d", &(u_input[0]), &tmp1, &tmp2) < 3) {

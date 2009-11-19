@@ -11,7 +11,9 @@ caddr_t mem_ptr;
 void die() {
   kill(parent_pid, SIGINT);
   munmap(mem_ptr, mem_size);
+#ifdef DEBUG
   printf("KBD: Received SIGINT, quitting..\n");
+#endif
   exit(1);
 }
 
@@ -50,7 +52,9 @@ int main(int argc, char** argv) {
   sscanf(argv[0], "%d", &parent_pid);
   sscanf(argv[1], "%d", &fid);
   sscanf(argv[2], "%d", &mem_size);
+#ifdef DEBUG
   printf("KBD: %d %d %d\n", parent_pid, mem_size, fid);
+#endif
   mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,
   		 MAP_SHARED, fid, (off_t)0);
   mem_buffer *buffer = (mem_buffer*) mem_ptr;

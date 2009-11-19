@@ -69,7 +69,7 @@ void update_clock() {
   wall_min %= 60;
   wall_hr  %= 24;
   if (wall_state && env != NULL) {
-    sprintf(env->data, "CLOCK:%2d:%2d:%2d\n", wall_hr, wall_min, wall_sec);
+    sprintf(env->data, "CLOCK:%02d:%02d:%02d\n", wall_hr, wall_min, wall_sec);
     K_send_console_chars(env);
   }
 return;

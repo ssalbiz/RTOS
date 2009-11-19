@@ -10,8 +10,10 @@ FILE *tr_out;
 void die() {
   munmap(mem_ptr, mem_size);
   endwin();			/* End curses mode		  */
+#ifdef DEBUG
   fclose(tr_out);
   printf("CRT: Received SIGINT, quitting..\n");
+#endif
   exit(1);
 }
 
@@ -62,7 +64,9 @@ int main(int argc, char** argv) {
   scrollok(stdscr, TRUE);
   idlok(stdscr, TRUE);
   getmaxyx(stdscr,row,col);
+#ifdef DEBUG
   printw("CRT: %d %d %d\n", parent_pid, mem_size, fid);
+#endif
   refresh();			/* Print it on to the real screen */
 
   mem_ptr = mmap((caddr_t)0, mem_size, PROT_READ|PROT_WRITE,

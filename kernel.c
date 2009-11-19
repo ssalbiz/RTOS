@@ -69,11 +69,19 @@ PCB* pid_to_PCB(int target) {
 
 int K_request_process_status(MessageEnvelope* msg) {
   PCB* next = pq_peek(_process_list);
-  char tmp_buf[20];
+  char tmp_buf[20], state_msg[20], priority_msg[20];
   strcpy(msg->data, "PROCESS STATUS\nPID, STATE, PRIORITY\n");
   while (next != NULL) {
-    sprintf(tmp_buf, "%d,%d,%d\n", next->pid, 
-    				   next->state, 
+    switch(next->state) {
+      case EXECUTING	: strcpy(state_msg, "EXECUTING"); break;
+      case READY	: strcpy(state_msg, "READY"); break;
+      case MESSAGE_WAIT	:strcpy(state_msg, "MESSAGE_WAIT"); break;
+      case ENVELOPE_WAIT:strcpy(state_msg, "ENVELOPE_WAIT"); break;
+      case INTERRUPTED	: strcpy(state_msg, "INTERRUPTED"); break;
+      default: sprintf(state_msg, "%d", next->state);
+    }
+    sprintf(tmp_buf, "%d,%s,%d\n", next->pid, 
+    				   state_msg, 
 				   next->priority);
     strcat(msg->data, tmp_buf);
     next = next->p_next;
@@ -169,7 +177,7 @@ void K_register_trace(MessageEnvelope* env, int type) {
   new_evt->destination_pid = env->destination_pid;
   new_evt->source_pid      = env->sender_pid;
   new_evt->mtype           = env->type;
-  new_evt->timestamp       = ticks / TIMER_INTERVAL;
+  new_evt->timestamp       = seconds;
   new_evt->type            = type;
   new_evt->next            = NULL;
   trace_enqueue(new_evt, _tq);
@@ -180,6 +188,7 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
   env->destination_pid = dest_pid;
   //assume message text and type are handled elsewhere
   PCB* target = pid_to_PCB(dest_pid);
+  //check for message type sanity
   mq_remove(env, current_process->message_send);
   mq_enqueue(env, target->message_receive);
   K_register_trace(env, 0);
@@ -216,25 +225,39 @@ int K_get_trace_buffer(MessageEnvelope* env) {
   assert(env != NULL);
   msg_event* evts = _tq->send;
   int len = MESSAGE_SIZE/32;
-  char tmp_buf[len];
+  char tmp_buf[len], msg_type[20];
   strcpy(env->data, "");
   while(evts != NULL) {
-    sprintf(tmp_buf, "SENT:\tTO: %d,\tFR: %d,\tTIME: %d,\tTYPE: %d\n", 
+    switch(evts->mtype) {
+      case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
+      case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
+      case CONSOLE_OUTPUT: strcpy(msg_type, "CONSOLE OUTPUT"); break;
+      case DEFAULT: strcpy(msg_type, "DEFAULT IPC"); break;
+      default: sprintf(msg_type, "%d", evts->mtype); break;
+    }
+    sprintf(tmp_buf, "SENT:\tTO: %d,\tFR: %d,\tTIME: %d,\tTYPE: %s\n", 
     		evts->destination_pid, 
 		evts->source_pid,
 		evts->timestamp,
-		evts->mtype);
+		msg_type);
   
     strcat(env->data, tmp_buf);
     evts = evts->next;
   }
   evts = _tq->receive;
   while(evts != NULL) {
-    sprintf(tmp_buf, "RCVD:\tFR: %d,\tTO: %d,\tTIME: %d,\tTYPE: %d\n", 
+    switch(evts->mtype) {
+      case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
+      case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
+      case CONSOLE_OUTPUT: strcpy(msg_type, "CONSOLE OUTPUT"); break;
+      case DEFAULT: strcpy(msg_type, "DEFAULT IPC"); break;
+      default: sprintf(msg_type, "%d", evts->mtype); break;
+    }
+    sprintf(tmp_buf, "RCVD:\tFR: %d,\tTO: %d,\tTIME: %d,\tTYPE: %s\n", 
     		evts->source_pid, 
 		evts->destination_pid,
 		evts->timestamp,
-		evts->mtype);
+		msg_type);
     strcat(env->data, tmp_buf);
     evts = evts->next;
   }
@@ -250,11 +273,15 @@ void K_cleanup() {
 #endif
   sleep(2);
   kill(_kbd_pid, SIGINT);
+  wait(NULL);
   kill(_crt_pid, SIGINT);
+  wait(NULL);
   
   int stat = 0;
   if (_kbd_mem_ptr != NULL) {
+#ifdef DEBUG
     printf("RTX: unmapping keyboard share\n");
+#endif
     stat = munmap(_kbd_mem_ptr, MEMBLOCK_SIZE);
 #ifdef DEBUG
     if (stat == -1) {printf("RTX: Error unmapping keyboard share\n");} else {printf("RTX: SUCCESS\n");}
@@ -270,7 +297,9 @@ void K_cleanup() {
 
   }
   if (_crt_mem_ptr != NULL) {
+#ifdef DEBUG
     printf("RTX: unmapping crt share\n");
+#endif
     stat = munmap(_crt_mem_ptr, MEMBLOCK_SIZE);
 #ifdef DEBUG
     if (stat == -1) {printf("RTX: Error unmapping crt share\n");} else {printf("RTX: SUCCESS\n");}
