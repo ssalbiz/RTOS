@@ -270,8 +270,8 @@ int K_get_trace_buffer(MessageEnvelope* env) {
 void K_cleanup() {
 #ifdef DEBUG
   printf("RTX: sending signal\n");
-#endif
   sleep(2);
+#endif
   kill(_kbd_pid, SIGINT);
   wait(NULL);
   kill(_crt_pid, SIGINT);

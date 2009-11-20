@@ -3,6 +3,73 @@
 #include <stdio.h>
 #include <string.h>
 #include "userAPI.h"
+#define A_PID 5
+#define B_PID 6
+#define C_PID 7
+
+void processA() {
+  MessageEnvelope *message = NULL;
+  int num = 0;
+//  printf("procA %d", current_process->pid);
+  message = receive_message();
+  release_message_envelope(message);
+  do {
+    message = request_message_envelope();
+    message->type = DEFAULT;
+    sprintf(message->data, "%d", num);
+    send_message(B_PID, message);
+    num++;
+    release_processor();
+  } while (1);
+}
+ 
+void processB() {
+  MessageEnvelope *message = NULL;
+  do {
+    message = receive_message();
+//    printf("procB");
+    send_message(C_PID,message);
+  } while(1);
+}
+
+void processC() {
+  MessageEnvelope *message = NULL;
+  int num = 0;
+  do {
+    if (mq_is_empty(current_process->message_send)) {
+      message 	= receive_message();
+    } else {
+      message	= mq_dequeue(current_process->message_send);
+    }
+    if (message->type == DEFAULT) 
+      sscanf(message->data, "%d", &num);
+    if ((num % 20) == 0) {
+	strcpy(message->data, "Process C\n");
+	message->type 	= DEFAULT;
+	send_console_chars(message);
+        message 	= receive_message();
+	while ( message->type != CONSOLE_OUTPUT ) {
+          //mq_remove  (message, current_process->message_send   ); //ensure no double reference
+          //mq_enqueue (message, current_process->message_receive);
+	  message = receive_message();
+	}
+
+	request_delay(10, WAKEUP, message); // 100 ticks = 10 seconds
+	message = receive_message();
+
+	while( message->type != WAKEUP ) {
+          //mq_remove (message, current_process->message_send); //ensure no double reference
+          //mq_enqueue(message, current_process->message_receive);
+	  message = receive_message();
+	}
+
+       // puts("console done");
+    }
+    release_message_envelope(message);
+    release_processor();
+  } while(1);
+}
+
 
 
 void test_process_send() { //pid == 4
@@ -32,7 +99,6 @@ void test_process_send() { //pid == 4
 //    get_console_chars(env);
 //    env = receive_message();
   }
-    
 }
 
 void test_process_receive() { //pid == 5
@@ -54,8 +120,8 @@ void test_process_receive() { //pid == 5
 }
 
 void CCI() { //top priority, pid = 3
-  MessageEnvelope *env = NULL, *n_env = NULL, *head = NULL, *tmp = NULL;
-  int envs = 2, tmp1, tmp2, tmp3;
+  MessageEnvelope *env = NULL, *n_env = NULL, *head = NULL, *tmp = NULL, *kbd_io;
+  int envs = 5, tmp1, tmp2, tmp3;
   char u_input[MEMBLOCK_SIZE];
   env = request_message_envelope();
   head = env;
@@ -70,20 +136,28 @@ void CCI() { //top priority, pid = 3
   strcpy(tmp->data, "MTE 241 RTX: Enter Command to ^C to exit\n");
   send_console_chars(tmp);
   tmp = receive_message();
-  tmp = head;
-  head = head->next;
+  strcpy(tmp->data, "");
+//  tmp = head;
+//  head = head->next;
   do {
-    get_console_chars(tmp);
-    tmp = receive_message(); //possible block on receive
-    strcpy(u_input, tmp->data);
+    get_console_chars(kbd_io);
+    kbd_io = receive_message(); //possible block on receive
+    while (kbd_io->type != CONSOLE_INPUT) {
+      mq_remove(kbd_io,  current_process->message_send);
+      mq_enqueue(kbd_io, current_process->message_receive);
+      kbd_io = receive_message();
+    }
+    strcpy(u_input, kbd_io->data);
      
     if (strcmp(u_input, "s") == 0) {
-      send_console_chars(tmp);
-      tmp = receive_message();
+      tmp->type = DEFAULT;
+      send_message(A_PID, tmp);
+      tmp  = head;
+      head = head->next;
     } else if (strcmp(u_input, "ps") == 0) {
       request_process_status(tmp);
       send_console_chars(tmp);
-      tmp = receive_message(); //echoback block
+      tmp = receive_message(); 
     } else if (strcmp(u_input, "cd") == 0) {
       send_console_chars(tmp);
       set_wall_clock_state(1);
@@ -123,5 +197,6 @@ void CCI() { //top priority, pid = 3
       send_console_chars(tmp);
       tmp = receive_message();
     }
+    if (tmp == NULL) { tmp = request_message_envelope(); }
   } while (1);
 }

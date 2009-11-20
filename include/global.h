@@ -9,12 +9,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <ncurses.h>
-//#define DEBUG 1
+#define DEBUG 1
 #define TRUE 1
 #define FALSE 0
 #define MESSAGE_SIZE 2048
 #define MEMBLOCK_SIZE 2048
-#define NUM_PROCESS 4
+#define NUM_PROCESS 5
 #define NUM_UPROCESS 20
 #define MIN_PRIORITY 3
 #define MAX_PRIORITY 0

@@ -37,7 +37,7 @@ return;
 void timer_service(void) {
   MessageEnvelope* env = NULL;
   do {
-    env = K_receive_message();// iprocess is kernel code
+    env = K_receive_message();  //iprocess is kernel code
     if (env != NULL) 
       timeout_enqueue(env, _timeout);
   } while (env != NULL);
@@ -48,6 +48,7 @@ void timer_service(void) {
         env = mq_dequeue(_timeout);
 	env->type = WAKEUP;
         K_send_message(env->sender_pid, env); //send wakeup message
+        puts("sending wakeup");
 	//wakeup message if it is on the timeout accomplised
     }
   }

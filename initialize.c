@@ -112,7 +112,9 @@ void init_processes() { //initialize PCB properties from init table and start co
     assert(newPCB->process_code != NULL);
     mq_allocate(&(newPCB->message_send));
     mq_allocate(&(newPCB->message_receive));
-    
+#ifdef DEBUG
+    printf("%d\n", newPCB->pid);
+#endif
     pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
     init_process_context(newPCB);
@@ -120,10 +122,13 @@ void init_processes() { //initialize PCB properties from init table and start co
   //allocate i_processes, dont touch context
   PCB** ip[] = {&timer_i_process, &keyboard_i_process, &crt_i_process};
   for (i = 0; i < I_PROCS; i++) {
+#ifdef DEBUG
+    printf("%d\n", i);
+#endif
     (*ip[i]) = (PCB*) malloc(sizeof(PCB));
     (*ip[i])->pid        = i; //kernel processes get low pnums
     (*ip[i])->priority   = MAX_PRIORITY; //KERNEL
-    (*ip[i])->stack_size = I_STACK_SIZE; //KER-NEL
+    (*ip[i])->stack_size = I_STACK_SIZE; //KERNEL
     (*ip[i])->stack = ((char*)malloc((*ip[i])->stack_size)) + (*ip[i])->stack_size - STK_OFFSET;
     (*ip[i])->stack_head = (*ip[i])->stack - (*ip[i])->stack_size + STK_OFFSET;
     (*ip[i])->state      = READY;
@@ -133,7 +138,9 @@ void init_processes() { //initialize PCB properties from init table and start co
     mq_allocate(&((*ip[i])->message_send));
     mq_allocate(&((*ip[i])->message_receive));
   }
-    
+#ifdef DEBUG    
+  sleep(2);
+#endif
 
 }
 
@@ -179,7 +186,7 @@ init_table* create_init_table(int pid, int priority, int stack, void* process_co
 void read_initialization_table() {
   int i = 0;
   int pid, pri, stk;
-  void* process_code[] = {(void*)null_process, (void*)CCI, (void*)test_process_send, (void*)test_process_receive}; //hard code preloaded processes
+  void* process_code[] = {(void*)null_process, (void*)CCI, (void*)processA, (void*)processB, (void*)processC}; //hard code preloaded processes
   FILE* fconf = fopen("init_table", "r");
   assert (fconf != NULL);
   for (; i < NUM_PROCESS; i++) {
@@ -233,7 +240,7 @@ int main(int argc, char** argv) {
  //    terminate();
    }
    masked = FALSE;
-   sleep(2);
+   //sleep(2);
    ticks = 0;
    wall_state = 0;
    unmask();
