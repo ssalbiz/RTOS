@@ -31,15 +31,19 @@ void timeout_enqueue(MessageEnvelope* env, message_queue* mq) {
       }
     }
   }
-return;
+  return;
 }
 
 void timer_service(void) {
   MessageEnvelope* env = NULL;
   do {
     env = K_receive_message();  //iprocess is kernel code
-    if (env != NULL) 
+    if (env != NULL) {
+#ifdef DEBUG
+      printf("message received %s\n", env->data);
+#endif
       timeout_enqueue(env, _timeout);
+    }
   } while (env != NULL);
   ticks++;
   if (!mq_is_empty(_timeout)) {
@@ -48,7 +52,6 @@ void timer_service(void) {
         env = mq_dequeue(_timeout);
 	env->type = WAKEUP;
         K_send_message(env->sender_pid, env); //send wakeup message
-        puts("sending wakeup");
 	//wakeup message if it is on the timeout accomplised
     }
   }
@@ -87,6 +90,7 @@ void keyboard_service(void) {
       if (buffer->flag == MEM_READY) {
         strncpy(env->data, buffer->data, MIN(buffer->length, MESSAGE_SIZE)); //preprocessor hacks
 	buffer->flag = MEM_DONE; //done reading
+	env->type = CONSOLE_INPUT;
 	K_send_message(env->sender_pid, env);
       } else {//this should be always true since the keyboard is only going to send the signal when its ready
         //pretend we never received the envelope. Remove from the send queue and re-enqueue to receive

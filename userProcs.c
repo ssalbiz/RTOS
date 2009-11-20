@@ -49,21 +49,23 @@ void processC() {
 	send_console_chars(message);
         message 	= receive_message();
 	while ( message->type != CONSOLE_OUTPUT ) {
-          //mq_remove  (message, current_process->message_send   ); //ensure no double reference
-          //mq_enqueue (message, current_process->message_receive);
 	  message = receive_message();
 	}
+//        strcpy(message->data, "DEADBEEF");
+//	request_delay(10, WAKEUP, message); // 100 ticks = 10 seconds
+//#ifdef DEBUG
+//        if (timer_i_process->message_receive->head != NULL)
+//	printf("message on queue! %s\n", (timer_i_process->message_receive->head->data));
+//#endif
+//	message = receive_message();
 
-	request_delay(10, WAKEUP, message); // 100 ticks = 10 seconds
-	message = receive_message();
+//	while( message->type != WAKEUP ) {
+//#ifdef DEBUG
+//	puts("STUCK");
+//#endif
+//	  message = receive_message();
+//	}
 
-	while( message->type != WAKEUP ) {
-          //mq_remove (message, current_process->message_send); //ensure no double reference
-          //mq_enqueue(message, current_process->message_receive);
-	  message = receive_message();
-	}
-
-       // puts("console done");
     }
     release_message_envelope(message);
     release_processor();
@@ -120,7 +122,7 @@ void test_process_receive() { //pid == 5
 }
 
 void CCI() { //top priority, pid = 3
-  MessageEnvelope *env = NULL, *n_env = NULL, *head = NULL, *tmp = NULL, *kbd_io;
+  MessageEnvelope *env = NULL, *n_env = NULL, *head = NULL, *tmp = NULL, *kbd_io = NULL;
   int envs = 5, tmp1, tmp2, tmp3;
   char u_input[MEMBLOCK_SIZE];
   env = request_message_envelope();
@@ -132,7 +134,8 @@ void CCI() { //top priority, pid = 3
     env->next = NULL;
   } while (--envs > 0);
   tmp = head;
-  head = head->next;
+  kbd_io = tmp->next;
+  head = kbd_io->next;
   strcpy(tmp->data, "MTE 241 RTX: Enter Command to ^C to exit\n");
   send_console_chars(tmp);
   tmp = receive_message();
@@ -173,6 +176,7 @@ void CCI() { //top priority, pid = 3
     } else if (strcmp(u_input, "t") == 0) {
       strcpy(tmp->data, "Terminating...\n");
       send_console_chars(tmp);
+      tmp = receive_message();
       terminate();
     } else if (u_input[0] == 'n') {
       if (sscanf(u_input, "%c %d %d", &(u_input[0]), &tmp1, &tmp2) < 3) {
