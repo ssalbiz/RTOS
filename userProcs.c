@@ -41,8 +41,13 @@ void processC() {
     } else {
       message	= mq_dequeue(current_process->message_send);
     }
-    if (message->type == DEFAULT) 
+    if (message->type == DEFAULT) {
       sscanf(message->data, "%d", &num);
+    } else {
+      mq_enqueue(message, current_process->message_send);
+      continue;
+    }
+
     if ((num % 20) == 0) {
 	strcpy(message->data, "Process C\n");
 	message->type 	= DEFAULT;
@@ -51,7 +56,7 @@ void processC() {
 	while ( message->type != CONSOLE_OUTPUT ) {
 	  message = receive_message();
 	}
-//        strcpy(message->data, "DEADBEEF");
+        strcpy(message->data, "DEADBEEF");
 //	request_delay(10, WAKEUP, message); // 100 ticks = 10 seconds
 //#ifdef DEBUG
 //        if (timer_i_process->message_receive->head != NULL)

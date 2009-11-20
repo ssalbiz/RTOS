@@ -40,7 +40,7 @@ void timer_service(void) {
     env = K_receive_message();  //iprocess is kernel code
     if (env != NULL) {
 #ifdef DEBUG
-      printf("message received %s\n", env->data);
+      printf("message received %s\n\r", env->data);
 #endif
       timeout_enqueue(env, _timeout);
     }
