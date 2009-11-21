@@ -79,6 +79,7 @@ int trace_is_empty(trace_buffer* tq, enum Event type) {
 
 void trace_enqueue(msg_event* msg, trace_buffer* tq) {
   assert(tq != NULL && msg != NULL);
+  msg->next = NULL;
   if (msg->type == SEND) {
     if (tq->send_length < TRACE_LENGTH) { //spec'd at 16
       if (trace_is_empty(tq, msg->type)) {
@@ -171,6 +172,7 @@ msg_event* trace_dequeue(trace_buffer* tq, enum Event type) {
     tq->receive = tq->receive->next;
     tq->receive_length--;
   }
+  tmp->next = NULL;
   return tmp;
 }
 
@@ -221,11 +223,10 @@ MessageEnvelope* mq_dequeue(message_queue* mq) {
 //return head
 PCB* ppq_peek(priority_process_queue* ppq) {
   assert(ppq != NULL);
-  priority_process_queue _ppq = (*ppq);
   int i = 0;
   for (; i < MIN_PRIORITY; i++) 
     if (!ppq_is_empty_p(i, ppq)) 
-      return _ppq.pq_head[i];
+      return ppq->pq_head[i];
   return NULL;
 }
 
@@ -253,21 +254,22 @@ msg_event* trace_peek(trace_buffer* tq, enum Event type) {
 //iterate through queue until target is encountered, juggle references
 PCB* ppq_remove(PCB* target, priority_process_queue* ppq) {
   assert(ppq != NULL);
-  priority_process_queue _ppq = (*ppq);
   int priority = target->priority;
-  PCB* t = _ppq.pq_head[priority];
-  if (target == _ppq.pq_head[priority]) {
-    _ppq.pq_head[priority] = _ppq.pq_head[priority]->q_next;
+  PCB* t = ppq->pq_head[priority];
+  if (target == ppq->pq_head[priority]) {
+    ppq->pq_head[priority] = ppq->pq_head[priority]->q_next;
+    target->q_next = NULL;
     return target;
   }
   while (t->q_next != NULL) {
     if (t->q_next == target) {
-      if (_ppq.pq_tail[priority] == t->q_next) { 
-        _ppq.pq_tail[priority] = t;
+      if (ppq->pq_tail[priority] == t->q_next) { 
+        ppq->pq_tail[priority] = t;
 	t->q_next = NULL;
 	return target;
       }
       t->q_next = (t->q_next)->q_next;
+      t->q_next = NULL;
       return target;
     } else {
       t = t->q_next;
@@ -294,6 +296,7 @@ PCB* pq_remove(PCB* target, process_queue* pq) {
       return target;
     }
     next->p_next = (next->p_next)->p_next;
+    next->p_next = NULL;
     return target;
   } else { return NULL; }
 }
@@ -316,6 +319,7 @@ MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
       return target;
     }
     next->next = (next->next)->next;
+    target->next = NULL;
     return target;
   } else {
     return NULL;

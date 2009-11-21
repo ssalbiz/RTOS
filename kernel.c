@@ -163,6 +163,7 @@ void K_release_message_envelope(MessageEnvelope* env) {
   mq_remove(env, current_process->message_send);
   mq_remove(env, current_process->message_receive);
   mq_enqueue(env, _feq);
+
   if (!ppq_is_empty(_ewq)) {
     PCB* nextPCB = ppq_dequeue(_ewq);
     nextPCB->state = READY;
@@ -191,7 +192,7 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
   //check for message type sanity
   mq_remove(env, current_process->message_send);
   mq_enqueue(env, target->message_receive);
-  K_register_trace(env, 0);
+  //K_register_trace(env, 0);
   //do trace
   if (target->state == MESSAGE_WAIT) {
     target->state = READY;
@@ -217,7 +218,7 @@ MessageEnvelope* K_receive_message(void) {
   //still want the envelope associated with this process, so put it on the send queue
   mq_enqueue(env, current_process->message_send);
   //do trace
-  K_register_trace(env, 1);
+  //K_register_trace(env, 1);
   return env;
 }
 
@@ -352,9 +353,9 @@ void K_cleanup() {
 #ifdef DEBUG
     printf("RTX: deallocating envelope list\n");
 #endif
-//    mq_free(_timeout);
+    mq_free(_timeout);
     mq_free(_feq);
-    free(_timeout);
+    free   (_timeout);
   }
 
 }

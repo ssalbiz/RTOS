@@ -10,7 +10,6 @@
 void processA() {
   MessageEnvelope *message = NULL;
   int num = 0;
-//  printf("procA %d", current_process->pid);
   message = receive_message();
   release_message_envelope(message);
   do {
@@ -27,7 +26,6 @@ void processB() {
   MessageEnvelope *message = NULL;
   do {
     message = receive_message();
-//    printf("procB");
     send_message(C_PID,message);
   } while(1);
 }
@@ -35,9 +33,11 @@ void processB() {
 void processC() {
   MessageEnvelope *message = NULL;
   int num = 0;
+
   do {
     if (mq_is_empty(current_process->message_send)) {
       message 	= receive_message();
+      mq_remove(message, current_process->message_send);
     } else {
       message	= mq_dequeue(current_process->message_send);
     }
@@ -57,22 +57,15 @@ void processC() {
 	  message = receive_message();
 	}
         strcpy(message->data, "DEADBEEF");
-//	request_delay(10, WAKEUP, message); // 100 ticks = 10 seconds
-//#ifdef DEBUG
-//        if (timer_i_process->message_receive->head != NULL)
-//	printf("message on queue! %s\n", (timer_i_process->message_receive->head->data));
-//#endif
-//	message = receive_message();
-
-//	while( message->type != WAKEUP ) {
-//#ifdef DEBUG
-//	puts("STUCK");
-//#endif
-//	  message = receive_message();
-//	}
+	request_delay(10, WAKEUP, message); // 100 ticks = 10 seconds
+	message = receive_message();
+	while( message->type != WAKEUP ) {
+	  message = receive_message();
+	}
 
     }
     release_message_envelope(message);
+    message = NULL;
     release_processor();
   } while(1);
 }
@@ -206,6 +199,6 @@ void CCI() { //top priority, pid = 3
       send_console_chars(tmp);
       tmp = receive_message();
     }
-    if (tmp == NULL) { tmp = request_message_envelope(); }
+    if (head == NULL) { tmp = request_message_envelope(); }
   } while (1);
 }
