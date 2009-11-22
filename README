@@ -14,5 +14,13 @@ To run the automated unit tests bundled with the source, run:
 
 'make tests'
 
+To enable output logging and debugging output, type:
+
+'make DEBUG=1'
+
+To generate the Doxygen documentation, type:
+
+'make docs'
+
 As of 10/24/09, the automated unit tests consist of queue interface tests and a valgrind memcheck run.
 
