@@ -28,13 +28,15 @@ void pq_allocate(process_queue** pq) {
 
 void trace_allocate(trace_buffer** tq) {
   (*tq) = (trace_buffer*) malloc(sizeof(trace_buffer));
+  int c =0;
   assert((*tq) != NULL);
-  (*tq)->send           = NULL;
-  (*tq)->send_tail      = NULL;
-  (*tq)->receive        = NULL;
-  (*tq)->receive_tail   = NULL;
   (*tq)->send_length    = 0;
   (*tq)->receive_length = 0;
+  for (; c < TRACE_LENGTH; c++) {
+    (*tq)->send[c] = (msg_event*) malloc(sizeof(msg_event));
+    (*tq)->receive[c] = (msg_event*) malloc(sizeof(msg_event));
+  }
+  
 }
 
 //Queue is_empty (if queue head is NULL, no elements, therefore empty)
@@ -65,9 +67,9 @@ int ppq_is_empty_p(int p, priority_process_queue *ppq) {
 
 int trace_is_empty(trace_buffer* tq, enum Event type) {
   if (type == SEND) 
-    return (tq->send == NULL);
+    return (tq->send_length <= 0);
   else 
-    return (tq->receive == NULL);
+    return (tq->receive_length <= 0);
 }
   
 
@@ -77,44 +79,19 @@ int trace_is_empty(trace_buffer* tq, enum Event type) {
 //
 //
 
-void trace_enqueue(msg_event* msg, trace_buffer* tq) {
+void trace_enqueue(MessageEnvelope* msg, trace_buffer* tq, enum Event type) {
   assert(tq != NULL && msg != NULL);
   msg->next = NULL;
-  if (msg->type == SEND) {
-    if (tq->send_length < TRACE_LENGTH) { //spec'd at 16
-      if (trace_is_empty(tq, msg->type)) {
-        tq->send      = msg;
-	tq->send_tail = msg;
-      } else {
-        tq->send_tail->next = msg;
-        tq->send_tail = tq->send_tail->next;
-      }
-      msg->next = NULL;
-      tq->send_length++;
-    } else {
-      msg_event *tmp = trace_dequeue(tq, msg->type);
-      free(tmp);
-      tq->send_tail->next = msg;
-      msg->next = NULL;
-    }
+  msg_event* tmp = NULL;
+  if (type == SEND) {
+    tmp = tq->send[(tq->send_length++)%16];
   } else {
-    if (tq->receive_length < TRACE_LENGTH) { 
-      if (trace_is_empty(tq, msg->type)) {
-        tq->receive      = msg;
-	tq->receive_tail = msg;
-      } else {
-        tq->receive_tail->next = msg;
-        tq->receive_tail = tq->receive_tail->next;
-      }
-      msg->next = NULL;
-      tq->receive_length++;
-    } else {
-      msg_event *tmp = trace_dequeue(tq, msg->type);
-      free(tmp);
-      tq->receive_tail->next = msg;
-      msg->next = NULL;
-    }
+    tmp = tq->receive[(tq->receive_length++)%16];
   }
+  tmp->destination_pid 	= msg->destination_pid;
+  tmp->source_pid 	= msg->sender_pid;
+  tmp->mtype		= msg->type;
+  tmp->type		= type;
 }
 
 void mq_enqueue(MessageEnvelope* env, message_queue* mq) {
@@ -158,24 +135,6 @@ void ppq_enqueue(PCB* q_next, priority_process_queue* ppq) {
 //Queue dequeues
 //remove head, reset head/tail pointer as necessary
 //return NULL on empty list
-
-msg_event* trace_dequeue(trace_buffer* tq, enum Event type) {
-  assert(tq != NULL);
-  msg_event* tmp;
-  if (trace_is_empty(tq, type)) return NULL;
-  if (type == SEND) {
-    tmp = tq->send;
-    tq->send = tq->send->next;
-    tq->send_length--;
-  } else {
-    tmp = tq->receive;
-    tq->receive = tq->receive->next;
-    tq->receive_length--;
-  }
-  tmp->next = NULL;
-  return tmp;
-}
-
 
 PCB* ppq_dequeue(priority_process_queue* ppq) {
   assert(ppq != NULL);
@@ -243,9 +202,9 @@ MessageEnvelope* mq_peek(message_queue* mq) {
 msg_event* trace_peek(trace_buffer* tq, enum Event type) {
   assert(tq != NULL);
   if (type == SEND) 
-    return tq->send;
+    return tq->send[0];
   else
-    return tq->receive;
+    return tq->receive[0];
 }
 
 //Queue removes
@@ -328,15 +287,15 @@ MessageEnvelope* mq_remove(MessageEnvelope* target, message_queue* mq) {
 
 //Queue deallocators
 //called at cleanup
-void mq_free(message_queue* mq) {
-  assert(mq != NULL);
+void mq_free(message_queue** mq) {
+  assert(mq != NULL && *mq != NULL);
   MessageEnvelope* env = NULL;
-  while (!mq_is_empty(mq)) {
-    env = mq_dequeue(mq);
+  while (!mq_is_empty(*mq)) {
+    env = mq_dequeue(*mq);
     assert(env != NULL);
     free(env);
   }
-  free(mq);
+  free(*mq);
 }
 
 
@@ -350,8 +309,8 @@ void pq_free(process_queue** pq) {
     assert(next->stack_head != NULL);
     free(next->stack_head);
     assert(next->message_send != NULL && next->message_receive != NULL);
-    mq_free(next->message_send);
-    mq_free(next->message_receive);
+    mq_free(&(next->message_send));
+    mq_free(&(next->message_receive));
     free(next);
     next = store;
   }
@@ -363,27 +322,16 @@ void pq_free(process_queue** pq) {
  
 int ppq_free(priority_process_queue* ppq) {
   assert(ppq != NULL);
-  //assume all PCBs have been safely deallocated, only free queue memory
-  //TODO: make less retarded
   free(ppq);
 return 0;
 }
 
 void trace_free(trace_buffer** tq) {
   assert (*tq != NULL);
-  msg_event* tmp  = (*tq)->send;
-  msg_event* next = NULL;
-  while (tmp != NULL) {
-    next = tmp->next;
-    free(tmp);
-    tmp = next;
-  }
-  tmp  = (*tq)->receive;
-  next = NULL;
-  while (tmp != NULL) {
-    next = tmp->next;
-    free(tmp);
-    tmp = next;
+  int c = 0;
+  for (c = 0; c < TRACE_LENGTH; c++) {
+    free((*tq)->send[c]);
+    free((*tq)->receive[c]);
   }
   free(*tq);
   *tq = NULL;

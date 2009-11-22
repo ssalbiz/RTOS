@@ -54,6 +54,10 @@ void setup_kernel_structs() {
     new_env = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
     mq_enqueue(new_env, _feq);
   }
+  //allocate clock envelope
+  clock_envelope = (MessageEnvelope*) malloc(sizeof(MessageEnvelope));
+  clock_envelope->next = NULL;
+  clock_envelope_state = 1;
 }
 
 void dispatch() {

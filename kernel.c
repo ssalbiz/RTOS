@@ -2,7 +2,6 @@
 
 
 void K_terminate() {
-  atomic(1);
   K_cleanup();
   exit(0);
 }
@@ -146,8 +145,11 @@ int K_get_console_chars(MessageEnvelope* env) {
 
 MessageEnvelope* K_request_message_envelope(void) {
   MessageEnvelope *env = NULL;
+  if (current_process == timer_i_process && clock_envelope_state) {
+    clock_envelope_state = 0;
+    return clock_envelope;
+  } else if (current_process == timer_i_process) return NULL;
   while (mq_is_empty(_feq)) {
-    if (current_process == timer_i_process) return NULL;
     current_process->state = ENVELOPE_WAIT;
     ppq_enqueue(current_process, _ewq);
     K_process_switch();
@@ -162,6 +164,7 @@ void K_release_message_envelope(MessageEnvelope* env) {
   strcpy(env->data, "");
   mq_remove(env, current_process->message_send);
   mq_remove(env, current_process->message_receive);
+  if (env == clock_envelope) { clock_envelope_state = 1; return; }
   mq_enqueue(env, _feq);
 
   if (!ppq_is_empty(_ewq)) {
@@ -174,14 +177,7 @@ void K_release_message_envelope(MessageEnvelope* env) {
 
 void K_register_trace(MessageEnvelope* env, int type) {
   assert(_tq != NULL && env != NULL);
-  msg_event* new_evt       = (msg_event*) malloc(sizeof(msg_event));
-  new_evt->destination_pid = env->destination_pid;
-  new_evt->source_pid      = env->sender_pid;
-  new_evt->mtype           = env->type;
-  new_evt->timestamp       = seconds;
-  new_evt->type            = type;
-  new_evt->next            = NULL;
-  trace_enqueue(new_evt, _tq);
+  trace_enqueue(env, _tq, type);
 }
 
 void K_send_message(int dest_pid, MessageEnvelope* env) {
@@ -192,7 +188,7 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
   //check for message type sanity
   mq_remove(env, current_process->message_send);
   mq_enqueue(env, target->message_receive);
-  //K_register_trace(env, 0);
+  K_register_trace(env, 0);
   //do trace
   if (target->state == MESSAGE_WAIT) {
     target->state = READY;
@@ -218,17 +214,19 @@ MessageEnvelope* K_receive_message(void) {
   //still want the envelope associated with this process, so put it on the send queue
   mq_enqueue(env, current_process->message_send);
   //do trace
-  //K_register_trace(env, 1);
+  K_register_trace(env, 1);
   return env;
 }
 
 int K_get_trace_buffer(MessageEnvelope* env) {
   assert(env != NULL);
-  msg_event* evts = _tq->send;
+  int i = 0;
   int len = MESSAGE_SIZE/32;
   char tmp_buf[len], msg_type[20];
+  msg_event* evts;
   strcpy(env->data, "");
-  while(evts != NULL) {
+  for (; i < TRACE_LENGTH; i++) {
+    evts = _tq->send[i];
     switch(evts->mtype) {
       case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
       case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
@@ -243,10 +241,9 @@ int K_get_trace_buffer(MessageEnvelope* env) {
 		msg_type);
   
     strcat(env->data, tmp_buf);
-    evts = evts->next;
   }
-  evts = _tq->receive;
-  while(evts != NULL) {
+  for( i = 0; i < TRACE_LENGTH; i++) {
+    evts = _tq->receive[i];
     switch(evts->mtype) {
       case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
       case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
@@ -260,9 +257,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
 		evts->timestamp,
 		msg_type);
     strcat(env->data, tmp_buf);
-    evts = evts->next;
   }
-  //free(evts);
   return 0;
 }
 
@@ -328,12 +323,12 @@ void K_cleanup() {
 #ifdef DEBUG
     printf("RTX: deallocating i_processes message queues\n");
 #endif
-    mq_free(timer_i_process->message_send);
-    mq_free(timer_i_process->message_receive);
-    mq_free(keyboard_i_process->message_send);
-    mq_free(keyboard_i_process->message_receive);
-    mq_free(crt_i_process->message_send);
-    mq_free(crt_i_process->message_receive);
+    mq_free(&(timer_i_process->message_send));
+    mq_free(&(timer_i_process->message_receive));
+    mq_free(&(keyboard_i_process->message_send));
+    mq_free(&(keyboard_i_process->message_receive));
+    mq_free(&(crt_i_process->message_send));
+    mq_free(&(crt_i_process->message_receive));
 #ifdef DEBUG
     printf("RTX: deallocating i_process stacks\n");
 #endif
@@ -349,13 +344,18 @@ void K_cleanup() {
   ppq_free(_ewq);
   ppq_free(_mwq);
   trace_free(&_tq);
-  if (!mq_is_empty(_feq)) {
 #ifdef DEBUG
     printf("RTX: deallocating envelope list\n");
 #endif
-    mq_free(_timeout);
-    mq_free(_feq);
-    free   (_timeout);
+  if (!mq_is_empty(_feq)) {
+    mq_free(&(_feq));
+  } else {
+    free(_feq);
   }
+  free   (clock_envelope);
+#ifdef DEBUG
+  printf("RTX: deallocating timeout queue\n");
+#endif
+  free(_timeout); //all timeouts taken care of old chap.
 
 }

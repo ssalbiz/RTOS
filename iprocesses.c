@@ -38,8 +38,10 @@ void timer_service(void) {
   MessageEnvelope* env = NULL;
   do {
     env = K_receive_message();  //iprocess is kernel code
-    if (env != NULL) {
+    if (env != NULL && env->type != CONSOLE_OUTPUT) {
       timeout_enqueue(env, _timeout);
+    } else if (env != NULL) {
+      K_release_message_envelope(env);
     }
   } while (env != NULL);
   ticks++;

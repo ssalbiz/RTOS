@@ -27,6 +27,8 @@ jmp_buf kernel_buf;
 int ticks, seconds;//absolute time since RTX start
 
 int wall_hr, wall_min, wall_sec, wall_state;
+int clock_envelope_state;
+MessageEnvelope* clock_envelope; //reserved message envelope for wall clock
 
 void K_terminate() ;
 void K_context_switch(jmp_buf prev, jmp_buf next) ;

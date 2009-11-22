@@ -122,8 +122,8 @@ typedef struct msg_event {
 
 typedef struct trace_buffer {
   int send_length, receive_length; //to maintain fixed size
-  msg_event* send, *send_tail;
-  msg_event* receive, *receive_tail;
+  msg_event* send[TRACE_LENGTH];
+  msg_event* receive[TRACE_LENGTH];
 } trace_buffer;
 
 typedef struct mem_buffer {
