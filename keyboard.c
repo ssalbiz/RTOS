@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     kbd_in = getchar();
     putc(kbd_in, stdout);
     //echo back
-    if (kbd_in != '\r' && index < MEMBLOCK_SIZE-1) {
+    if (kbd_in != '\n' && index < MEMBLOCK_SIZE-1) {
       local_buffer[index++] = kbd_in;
     } else {
       local_buffer[index++] = '\0';
