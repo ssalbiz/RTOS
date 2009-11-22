@@ -52,7 +52,9 @@ void register_handlers() {
 int main(int argc, char** argv) {
   int x, y, row, col;
   char *tmp;
+#ifdef DEBUG
   tr_out = fopen("trace.out", "w");
+#endif
   register_handlers();
   sscanf(argv[0], "%d", &parent_pid);
   sscanf(argv[1], "%d", &fid);
@@ -90,7 +92,9 @@ int main(int argc, char** argv) {
           move(y, 0);
         } else {
           printw("$:%s\n\r", tmp);
+#ifdef DEBUG
           fprintf(tr_out, "$:%s\n\r", tmp);
+#endif
           //move(y, 0);
         }
         refresh();

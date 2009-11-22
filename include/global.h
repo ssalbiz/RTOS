@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <ncurses.h>
-#define DEBUG 1
+//#define DEBUG 1
 #define TRUE 1
 #define FALSE 0
 #define MESSAGE_SIZE 2048

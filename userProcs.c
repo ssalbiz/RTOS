@@ -102,7 +102,7 @@ void test_process_send() { //pid == 4
 }
 
 void test_process_receive() { //pid == 5
-  //testing message recieve
+  //testing message receive
   //printf("attemping to receive from 1\n");
   MessageEnvelope* env = receive_message();
   //printf("got:_%s_ from process id: %d\n", env->data, env->sender_pid);
@@ -149,8 +149,11 @@ void CCI() { //top priority, pid = 3
       kbd_io = receive_message();
     }
     strcpy(u_input, kbd_io->data);
-     
-    if (strcmp(u_input, "s") == 0) {
+    if (strlen(u_input) <= 0) {
+      strcpy(tmp->data, " ");
+      send_console_chars(tmp);
+      tmp = receive_message();
+    } else if (strcmp(u_input, "s") == 0) {
       tmp->type = DEFAULT;
       send_message(A_PID, tmp);
       tmp  = head;
@@ -160,13 +163,9 @@ void CCI() { //top priority, pid = 3
       send_console_chars(tmp);
       tmp = receive_message(); 
     } else if (strcmp(u_input, "cd") == 0) {
-      send_console_chars(tmp);
       set_wall_clock_state(1);
-      tmp = receive_message();
     } else if (strcmp(u_input, "ct") == 0) {
-      send_console_chars(tmp);
       set_wall_clock_state(0);
-      tmp = receive_message();
     } else if (strcmp(u_input, "b") == 0) {
       get_trace_buffer(tmp);
       send_console_chars(tmp);
@@ -178,17 +177,16 @@ void CCI() { //top priority, pid = 3
       terminate();
     } else if (u_input[0] == 'n') {
       if (sscanf(u_input, "%c %d %d", &(u_input[0]), &tmp1, &tmp2) < 3) {
+        strcpy(tmp->data, "Error parsing arguments\n");
         send_console_chars(tmp);
         tmp = receive_message();
       } else {
-        int ret = change_priority(tmp1, tmp2);
-        sprintf(tmp->data, "%d\n", ret);
-        send_console_chars(tmp);
-        tmp = receive_message();
+        change_priority(tmp1, tmp2);
       }
     } else if (u_input[0] == 'c') {
       tmp1 = 0; tmp2 = 0; tmp3 = 0;
       if (sscanf(u_input, "%c %d:%d:%d", &(u_input[0]), &tmp1, &tmp2, &tmp3) < 4) {
+        strcpy(tmp->data, "Error parsing arguments\n");
         send_console_chars(tmp);
         tmp = receive_message();
       } else {
@@ -200,5 +198,6 @@ void CCI() { //top priority, pid = 3
       tmp = receive_message();
     }
     if (head == NULL) { tmp = request_message_envelope(); }
+    strcpy(kbd_io->data, "");
   } while (1);
 }

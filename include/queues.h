@@ -16,7 +16,7 @@ void mq_free(message_queue** mq);
 
 void trace_allocate(trace_buffer** tq);
 int  trace_is_empty(trace_buffer* tq, enum Event type);
-void trace_enqueue(MessageEnvelope* env, trace_buffer* tq, enum Event type); 
+void trace_enqueue(MessageEnvelope* env, trace_buffer* tq, enum Event type, int time); 
 msg_event* trace_dequeue(trace_buffer* tq, enum Event type);
 //note: trace_remove not implemented. Never used, no point
 msg_event* trace_peek(trace_buffer* tq, enum Event type);

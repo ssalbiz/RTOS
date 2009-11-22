@@ -79,7 +79,7 @@ int trace_is_empty(trace_buffer* tq, enum Event type) {
 //
 //
 
-void trace_enqueue(MessageEnvelope* msg, trace_buffer* tq, enum Event type) {
+void trace_enqueue(MessageEnvelope* msg, trace_buffer* tq, enum Event type, int time) {
   assert(tq != NULL && msg != NULL);
   msg->next = NULL;
   msg_event* tmp = NULL;
@@ -92,6 +92,7 @@ void trace_enqueue(MessageEnvelope* msg, trace_buffer* tq, enum Event type) {
   tmp->source_pid 	= msg->sender_pid;
   tmp->mtype		= msg->type;
   tmp->type		= type;
+  tmp->timestamp	= time;
 }
 
 void mq_enqueue(MessageEnvelope* env, message_queue* mq) {

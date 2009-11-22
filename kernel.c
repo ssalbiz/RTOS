@@ -177,7 +177,7 @@ void K_release_message_envelope(MessageEnvelope* env) {
 
 void K_register_trace(MessageEnvelope* env, int type) {
   assert(_tq != NULL && env != NULL);
-  trace_enqueue(env, _tq, type);
+  trace_enqueue(env, _tq, type, seconds);
 }
 
 void K_send_message(int dest_pid, MessageEnvelope* env) {
@@ -225,8 +225,8 @@ int K_get_trace_buffer(MessageEnvelope* env) {
   char tmp_buf[len], msg_type[20];
   msg_event* evts;
   strcpy(env->data, "");
-  for (; i < TRACE_LENGTH; i++) {
-    evts = _tq->send[i];
+  for (i = 0; i < TRACE_LENGTH; i++) {
+    evts = _tq->send[(i+_tq->send_length)%16];
     switch(evts->mtype) {
       case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
       case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
@@ -243,7 +243,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
     strcat(env->data, tmp_buf);
   }
   for( i = 0; i < TRACE_LENGTH; i++) {
-    evts = _tq->receive[i];
+    evts = _tq->receive[(i+_tq->receive_length)%16];
     switch(evts->mtype) {
       case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
       case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
