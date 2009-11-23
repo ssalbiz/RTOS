@@ -5,8 +5,11 @@ CPP  = g++
 CC   = gcc
 MAKE = make
 RES  = 
-OBJ  =  userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o $(RES)
-LINKOBJ  = userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o $(RES)
+ifdef __sparc
+  SPARCOBJ = set.o
+endif
+OBJ  =  userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o $(RES) $(SPARCOBJ)
+LINKOBJ  = userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o $(RES) $(SPARCOBJ)
 LIBS =  -lcurses 
 INCS = include/
 CXXINCS = 
@@ -68,6 +71,10 @@ crt.o: crt.c include/global.h
 keyboard.o: keyboard.c include/global.h
 	$(CC) -c  $< -o $@  $(CFLAGS)
 
+ifdef __sparc
+set.o: set.s
+	$(CC) -c $< -o $@  $(CFLAGS)
+endif
 
 tests: myRTX CRT KB
 	cp queues.o test_cases/

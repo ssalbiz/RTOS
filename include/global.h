@@ -8,7 +8,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
-#include <ncurses.h>
+#include <curses.h>
 //#define DEBUG 1
 #define TRUE 1
 #define FALSE 0

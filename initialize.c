@@ -85,7 +85,7 @@ void init_process_context(PCB* target) {
       __asm__("movl %0,%%esp" :"=m" (proc_sp));
 #endif
 #ifdef __sparc
-      _set_sp( proc_sp );
+      _set_sp( (char*) newPCB->stack + newPCB->stack_size );
 #endif
       if (setjmp(newPCB->context) == 0) {
         longjmp(kernel_buf, 1);

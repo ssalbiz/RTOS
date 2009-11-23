@@ -1,5 +1,5 @@
 #include<signal.h>
-#include<ncurses.h>
+#include<curses.h>
 #include<sys/mman.h>
 #include "global.h"
 #include<string.h>
