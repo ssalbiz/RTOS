@@ -10,8 +10,6 @@
 #include <string.h>
 #include <curses.h>
 //#define DEBUG 1
-#define TRUE 1
-#define FALSE 0
 #define MESSAGE_SIZE 2048
 #define MEMBLOCK_SIZE 2048
 #define NUM_PROCESS 5

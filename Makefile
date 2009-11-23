@@ -5,7 +5,7 @@ CPP  = g++
 CC   = gcc
 MAKE = make
 RES  = 
-ifdef __sparc
+ifdef sparc
   SPARCOBJ = set.o
 endif
 OBJ  =  userProcs.o initialize.o iprocesses.o kernel.o queues.o userAPI.o $(RES) $(SPARCOBJ)
