@@ -250,7 +250,6 @@ int main(int argc, char** argv) {
    unmask();
    ualarm(TIMER_INTERVAL, TIMER_INTERVAL);
    dispatch();
-   printf("Quitting from kernel...(this means you fucked up)\n");
    terminate();
    return 0;
 }
