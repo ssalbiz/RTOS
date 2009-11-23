@@ -91,7 +91,7 @@ int main(int argc, char** argv) {
           mvprintw(0, col-strlen(tmp)-1, "%s\n\r", tmp);
           move(y, 0);
         } else {
-          printw("$:%s\n\r", tmp);
+          printw("CCI:%s\n\r", tmp);
 #ifdef DEBUG
           fprintf(tr_out, "$:%s\n\r", tmp);
 #endif
