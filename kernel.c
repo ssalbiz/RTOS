@@ -37,7 +37,7 @@ void K_process_switch() {
 //-calling process has already enqueued itself into a process queue to re-enter execution at some point
   PCB* next = ppq_dequeue(_rpq);
   PCB* tmp = current_process;
-  assert(tmp != NULL);
+  assert(tmp != NULL && next != NULL);
   next->state = EXECUTING;
   current_process = next; //non-atomic. Will reset?
   K_context_switch(tmp->context, next->context);
@@ -52,7 +52,6 @@ void K_release_processor() {
 
 void null_process() {
   while(1) {
-    release_processor(); //trusted kernel process
   }
 }
 
@@ -131,6 +130,12 @@ int K_change_priority(int new_priority, int target_pid) {
       default: break;
     }
   }
+  //preempt current process for top proces on ready queue if priority is higher.
+  target = ppq_peek(_rpq);
+  if (target != NULL && target->priority < current_process->priority) {
+    K_release_processor();
+  }
+
   return 0;
 }
 
@@ -194,6 +199,10 @@ void K_release_message_envelope(MessageEnvelope* env) {
     PCB* nextPCB = ppq_dequeue(_ewq);
     nextPCB->state = READY;
     ppq_enqueue(nextPCB, _rpq);
+    nextPCB = ppq_peek(_rpq);
+    if (nextPCB != NULL && nextPCB->priority < current_process->priority) {
+      K_release_processor();
+    }
   }
 }
 
@@ -217,6 +226,10 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
     target->state = READY;
     ppq_remove(target, _mwq);
     ppq_enqueue(target, _rpq);
+    target = ppq_peek(_rpq);
+    if (target->priority < current_process->priority) {
+      K_release_processor();
+    } 
   }
 }
 

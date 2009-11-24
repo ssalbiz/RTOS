@@ -140,6 +140,13 @@ void crt_service(void) {
   } while (env != NULL);
 }
 
+void check_preemption() {
+  PCB* target = NULL;
+  target = ppq_peek(_rpq);
+  if (target != NULL && target->priority < current_process->priority) 
+    K_release_processor();
+}
+
     
 
 
@@ -174,5 +181,6 @@ void signal_handler(int signal) {
   current_process = interrupted_process;
   interrupted_process = NULL;
   current_process->state = EXECUTING;
+  check_preemption();
   atomic(0);
 }
