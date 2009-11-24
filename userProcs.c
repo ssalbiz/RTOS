@@ -166,6 +166,9 @@ void CCI() { //top priority, pid = 3
       set_wall_clock_state(1);
     } else if (strcmp(u_input, "ct") == 0) {
       set_wall_clock_state(0);
+      strcpy(tmp->data, "STOPCLOCK");
+      send_console_chars(tmp);
+      tmp=receive_message();
     } else if (strcmp(u_input, "b") == 0) {
       get_trace_buffer(tmp);
       send_console_chars(tmp);
