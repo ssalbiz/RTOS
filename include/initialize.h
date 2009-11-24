@@ -20,6 +20,7 @@ typedef struct init_table {
   enum Priority priority;
   int stack_size;
   void* process_code;
+  char name[15];
 } init_table;
 
 int mask();

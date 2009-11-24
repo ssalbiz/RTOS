@@ -102,7 +102,7 @@ void init_process_context(PCB* target) {
 void init_processes() { //initialize PCB properties from init table and start context
   int i = 0;
   PCB* newPCB = NULL;
-  for (; i < NUM_PROCESS; i++) { //TODO: replace after unit tests
+  for (; i < NUM_PROCESS; i++) { 
     newPCB = (PCB*) malloc(sizeof(PCB));
     newPCB->pid        = IT[i].pid;
     newPCB->priority   = IT[i].priority;
@@ -113,11 +113,12 @@ void init_processes() { //initialize PCB properties from init table and start co
     newPCB->q_next     = NULL;
     newPCB->p_next     = NULL;
     newPCB->process_code = (void*) IT[i].process_code;
+    strcpy(newPCB->name, IT[i].name);
     assert(newPCB->process_code != NULL);
     mq_allocate(&(newPCB->message_send));
     mq_allocate(&(newPCB->message_receive));
 #ifdef DEBUG
-    printf("%d\n", newPCB->pid);
+    printf("%d %s\n", newPCB->pid, newPCB->name);
 #endif
     pq_enqueue(newPCB, _process_list);
     ppq_enqueue(newPCB, _rpq);
@@ -191,15 +192,18 @@ void read_initialization_table() {
   int i = 0;
   int pid, pri, stk;
   void* process_code[] = {(void*)null_process, (void*)CCI, (void*)processA, (void*)processB, (void*)processC}; //hard code preloaded processes
+  char* tmp = (char*) malloc(15*sizeof(char));
   FILE* fconf = fopen("init_table", "r");
   assert (fconf != NULL);
   for (; i < NUM_PROCESS; i++) {
-    fscanf(fconf, "%d %d %d\n", &pid, &pri, &stk);
+    fscanf(fconf, "%d %d %d %s\n", &pid, &pri, &stk, tmp);
     IT[i].pid = pid;
     IT[i].priority = pri;
     IT[i].stack_size = stk;
     IT[i].process_code = process_code[i];
+    strcpy(IT[i].name, tmp);
   }
+  free(tmp);
   fclose(fconf);
 }
 

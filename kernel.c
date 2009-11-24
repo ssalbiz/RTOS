@@ -68,8 +68,8 @@ PCB* pid_to_PCB(int target) {
 
 int K_request_process_status(MessageEnvelope* msg) {
   PCB* next = pq_peek(_process_list);
-  char tmp_buf[35], state_msg[20], priority_msg[20];
-  sprintf(msg->data, " PROCESS STATUS\n%5s %15s %10s\n--------------------------------\n", "PID", "STATE", "PRIORITY");
+  char tmp_buf[60], state_msg[20], priority_msg[20];
+  sprintf(msg->data, " PROCESS STATUS\n%5s %15s %15s %10s\n-------------------------------------------------\n", "PID", "NAME", "STATE", "PRIORITY");
   while (next != NULL) {
     switch(next->state) {
       case EXECUTING	: strcpy(state_msg, "EXECUTING"); break;
@@ -79,7 +79,8 @@ int K_request_process_status(MessageEnvelope* msg) {
       case INTERRUPTED	: strcpy(state_msg, "INTERRUPTED"); break;
       default: sprintf(state_msg, "%d", next->state);
     }
-    sprintf(tmp_buf, "%5d\t%15s%10d\n", next->pid, 
+    sprintf(tmp_buf, "%5d %15s %15s %10d\n", next->pid, 
+				   next->name,
     				   state_msg, 
 				   next->priority);
     strcat(msg->data, tmp_buf);

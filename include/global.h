@@ -96,8 +96,7 @@ typedef struct PCB {
   jmp_buf context;
   message_queue* message_send; //send message queue
   message_queue* message_receive; // receiving message queue
-  //enum bool i_process; //is this an i_process? PCB
-
+  char name[15];
 } PCB;
 
 typedef struct priority_process_queue {
