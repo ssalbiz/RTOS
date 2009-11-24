@@ -1,3 +1,20 @@
+/* Copyright 2009 Syed S. Albiz
+ * This file is part of myRTX.
+ *
+ * myRTX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * myRTX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with myRTX.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 #include "kernel.h"
 
 
@@ -20,7 +37,7 @@ void K_process_switch() {
 //-calling process has already enqueued itself into a process queue to re-enter execution at some point
   PCB* next = ppq_dequeue(_rpq);
   PCB* tmp = current_process;
-  assert(tmp != NULL);
+  assert(tmp != NULL && next != NULL);
   next->state = EXECUTING;
   current_process = next; //non-atomic. Will reset?
   K_context_switch(tmp->context, next->context);
@@ -35,7 +52,6 @@ void K_release_processor() {
 
 void null_process() {
   while(1) {
-    release_processor(); //trusted kernel process
   }
 }
 
@@ -92,7 +108,11 @@ int K_request_process_status(MessageEnvelope* msg) {
 
 int K_change_priority(int new_priority, int target_pid) {
   PCB* target = pid_to_PCB(target_pid);
-  if (new_priority <= MAX_PRIORITY || new_priority > MIN_PRIORITY) { //max priority reserved, less is neg
+  if (new_priority <= MAX_PRIORITY || new_priority > MIN_PRIORITY
+  	|| target_pid == timer_i_process->pid
+	|| target_pid == keyboard_i_process->pid
+	|| target_pid == crt_i_process->pid
+	|| target->priority == MAX_PRIORITY) { //max priority reserved, less is neg cannot change system processes
     return -1;
   }
   if (target == current_process) {
@@ -110,6 +130,12 @@ int K_change_priority(int new_priority, int target_pid) {
       default: break;
     }
   }
+  //preempt current process for top proces on ready queue if priority is higher.
+  target = ppq_peek(_rpq);
+  if (target != NULL && target->priority < current_process->priority) {
+    K_release_processor();
+  }
+
   return 0;
 }
 
@@ -173,6 +199,10 @@ void K_release_message_envelope(MessageEnvelope* env) {
     PCB* nextPCB = ppq_dequeue(_ewq);
     nextPCB->state = READY;
     ppq_enqueue(nextPCB, _rpq);
+    nextPCB = ppq_peek(_rpq);
+    if (nextPCB != NULL && nextPCB->priority < current_process->priority) {
+      K_release_processor();
+    }
   }
 }
 
@@ -196,6 +226,10 @@ void K_send_message(int dest_pid, MessageEnvelope* env) {
     target->state = READY;
     ppq_remove(target, _mwq);
     ppq_enqueue(target, _rpq);
+    target = ppq_peek(_rpq);
+    if (target->priority < current_process->priority) {
+      K_release_processor();
+    } 
   }
 }
 
