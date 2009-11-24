@@ -137,7 +137,7 @@ void CCI() { //top priority, pid = 3
   strcpy(tmp->data, "MTE 241 RTX: Enter Command to ^C to exit\n");
   send_console_chars(tmp);
   tmp = receive_message();
-  strcpy(tmp->data, "");
+  memset(tmp->data, '\0', MESSAGE_SIZE);
 //  tmp = head;
 //  head = head->next;
   do {
@@ -199,8 +199,10 @@ void CCI() { //top priority, pid = 3
       strcat(tmp->data, ": ERROR, bad command\n");
       send_console_chars(tmp);
       tmp = receive_message();
+      memset(tmp->data, '\0', MESSAGE_SIZE);
     }
     if (head == NULL) { tmp = request_message_envelope(); }
-    strcpy(kbd_io->data, "");
+    memset(kbd_io->data, '\0', MESSAGE_SIZE);
+    memset(u_input, '\0', MEMBLOCK_SIZE);
   } while (1);
 }

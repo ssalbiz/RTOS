@@ -156,13 +156,14 @@ MessageEnvelope* K_request_message_envelope(void) {
     K_process_switch();
   }
   env = mq_dequeue(_feq);
-  strcpy(env->data, "");
+  memset(env->data, '\0', MESSAGE_SIZE);
   mq_enqueue(env, current_process->message_send);
   return env;
 }
 
 void K_release_message_envelope(MessageEnvelope* env) {
-  strcpy(env->data, "");
+  assert(env != NULL);
+  memset(env->data, '\0', MESSAGE_SIZE);
   mq_remove(env, current_process->message_send);
   mq_remove(env, current_process->message_receive);
   if (env == clock_envelope) { clock_envelope_state = 1; return; }
@@ -225,7 +226,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
   int len = MESSAGE_SIZE/32;
   char tmp_buf[len], msg_type[20];
   msg_event* evts;
-  strcpy(env->data, "");
+  memset(env->data, '\0', MESSAGE_SIZE);
   for (i = 0; i < TRACE_LENGTH; i++) {
     evts = _tq->send[(i+_tq->send_length)%16];
     switch(evts->mtype) {
