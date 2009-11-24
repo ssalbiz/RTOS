@@ -1,3 +1,20 @@
+/* Copyright 2009 Syed S. Albiz
+ * This file is part of myRTX.
+ *
+ * myRTX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * myRTX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with myRTX.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 #include "kernel.h"
 
 
@@ -92,7 +109,11 @@ int K_request_process_status(MessageEnvelope* msg) {
 
 int K_change_priority(int new_priority, int target_pid) {
   PCB* target = pid_to_PCB(target_pid);
-  if (new_priority <= MAX_PRIORITY || new_priority > MIN_PRIORITY) { //max priority reserved, less is neg
+  if (new_priority <= MAX_PRIORITY || new_priority > MIN_PRIORITY
+  	|| target_pid == timer_i_process->pid
+	|| target_pid == keyboard_i_process->pid
+	|| target_pid == crt_i_process->pid
+	|| target->priority == MAX_PRIORITY) { //max priority reserved, less is neg cannot change system processes
     return -1;
   }
   if (target == current_process) {

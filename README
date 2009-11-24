@@ -24,3 +24,15 @@ To generate the Doxygen documentation, type:
 
 As of 10/24/09, the automated unit tests consist of queue interface tests and a valgrind memcheck run.
 
+NOTE:
+This software was designed and implemented to fulfill the partial requirements of the course MTE 241,
+during the Fall 2009 term at the University of Waterloo. Please see the COPYING file for the license
+this software is released under.
+
+
+Contributions:
+==============
+This software was written by Syed S. Albiz. The sparc stack pointer setting routine in the file set.s was taken
+from freely distributed code from the course project page (I have been unable to find the license,
+if any, that this code is distributed under).
+

@@ -1,3 +1,20 @@
+/* Copyright 2009 Syed S. Albiz
+ * This file is part of myRTX.
+ *
+ * myRTX is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * myRTX is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with myRTX.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 #include "global.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -184,7 +201,12 @@ void CCI() { //top priority, pid = 3
         send_console_chars(tmp);
         tmp = receive_message();
       } else {
-        change_priority(tmp1, tmp2);
+        tmp3 = change_priority(tmp1, tmp2);
+	if (tmp3 == -1) {
+	  strcpy(tmp->data, "Error, permission denied\n");
+	  send_console_chars(tmp);
+	  tmp = receive_message();
+	}
       }
     } else if (u_input[0] == 'c') {
       tmp1 = 0; tmp2 = 0; tmp3 = 0;
