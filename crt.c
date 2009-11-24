@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     while (tmp != NULL) {
       if (strlen(tmp) > 0) {
         if (strstr(tmp, "STOPCLOCK") != NULL) {
-	  mvprintw(0, col-20, "                    \n\r");
+	  mvprintw(0, col-20, "                    ");
           move(y, 0);
         } else if (strstr(tmp, "CLOCK") != NULL) {
           mvprintw(0, col-strlen(tmp)-1, "%s\n\r", tmp);
