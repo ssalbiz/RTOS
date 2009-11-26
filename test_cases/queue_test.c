@@ -28,7 +28,7 @@ int test_is_empty() {
   MessageEnvelope* env = (MessageEnvelope*)malloc(sizeof(MessageEnvelope));
   mq_enqueue(env, mq);
   if (mq_is_empty(mq)) { return 0; }
-  mq_free(mq);
+  mq_free(&mq);
   return 1;
 }
 
