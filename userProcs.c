@@ -226,5 +226,6 @@ void CCI() { //top priority, pid = 3
     if (head == NULL) { tmp = request_message_envelope(); }
     memset(kbd_io->data, '\0', MESSAGE_SIZE);
     memset(u_input, '\0', MEMBLOCK_SIZE);
+    memset(tmp->data, '\0', MESSAGE_SIZE);
   } while (1);
 }
