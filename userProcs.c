@@ -35,7 +35,6 @@ void processA() {
     sprintf(message->data, "%d", num);
     send_message(B_PID, message);
     num++;
-    release_processor();
   } while (1);
 }
  
@@ -83,7 +82,6 @@ void processC() {
     }
     release_message_envelope(message);
     message = NULL;
-    release_processor();
   } while(1);
 }
 
