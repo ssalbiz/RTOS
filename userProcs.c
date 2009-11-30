@@ -215,7 +215,15 @@ void CCI() { //top priority, pid = 3
         send_console_chars(tmp);
         tmp = receive_message();
       } else {
-        set_wall_clock(tmp1, tmp2, tmp3);
+        if (tmp1 < 0 || tmp1 > 23
+	    || tmp2 < 0 || tmp2 > 59
+	    || tmp3 < 0 || tmp3 > 59) {
+	  strcpy(tmp->data, "Error, Invalid Arguments\n");
+	  send_console_chars(tmp);
+	  tmp = receive_message();
+	} else {
+          set_wall_clock(tmp1, tmp2, tmp3);
+	}
       }
     } else {
       strcat(tmp->data, ": ERROR, bad command\n");
