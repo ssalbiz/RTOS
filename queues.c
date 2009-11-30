@@ -51,7 +51,17 @@ void trace_allocate(trace_buffer** tq) {
   (*tq)->receive_length = 0;
   for (; c < TRACE_LENGTH; c++) {
     (*tq)->send[c] = (msg_event*) malloc(sizeof(msg_event));
+    ((*tq)->send[c])->destination_pid = 0;
+    ((*tq)->send[c])->source_pid = 0;
+    ((*tq)->send[c])->timestamp = 0;
+    ((*tq)->send[c])->mtype = 0;
+    ((*tq)->send[c])->type = 0;
     (*tq)->receive[c] = (msg_event*) malloc(sizeof(msg_event));
+    ((*tq)->receive[c])->destination_pid = 0;
+    ((*tq)->receive[c])->source_pid = 0;
+    ((*tq)->receive[c])->timestamp = 0;
+    ((*tq)->receive[c])->mtype = 0;
+    ((*tq)->receive[c])->type = 0;
   }
   
 }

@@ -250,6 +250,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
   memset(env->data, '\0', MESSAGE_SIZE);
   for (i = 0; i < TRACE_LENGTH; i++) {
     evts = _tq->send[(i+_tq->send_length)%16];
+    if (evts->destination_pid == evts->source_pid && evts->source_pid == 0) continue;
     switch(evts->mtype) {
       case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
       case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
@@ -267,6 +268,7 @@ int K_get_trace_buffer(MessageEnvelope* env) {
   }
   for( i = 0; i < TRACE_LENGTH; i++) {
     evts = _tq->receive[(i+_tq->receive_length)%16];
+    if (evts->destination_pid == evts->source_pid && evts->source_pid == 0) continue;
     switch(evts->mtype) {
       case WAKEUP: strcpy(msg_type, "TIMER WAKEUP"); break;
       case CONSOLE_INPUT: strcpy(msg_type, "CONSOLE INPUT"); break;
