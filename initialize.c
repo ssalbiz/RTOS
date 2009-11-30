@@ -251,7 +251,6 @@ int main(int argc, char** argv) {
      mask();
      execl("./KB", arg1, arg2, arg3, (char*) 0);
      exit(1);
- //    terminate();
    }
    sprintf(arg1, "%d", crt_args->parent_pid);
    sprintf(arg2, "%d", crt_args->fid);
@@ -262,10 +261,9 @@ int main(int argc, char** argv) {
      mask();
      execl("./CRT", arg1, arg2, arg3, (char*) 0);
      exit(1);
- //    terminate();
    }
    masked = FALSE;
-   //sleep(2);
+   sleep(2);
    ticks = 0;
    wall_state = 0;
    unmask();
